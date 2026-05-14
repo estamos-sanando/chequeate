@@ -1,0 +1,3353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chequeate - Tu Salud Integral</title>
+<meta name="description" content="App de prevención médica, organización de chequeos y bienestar emocional">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/tesseract.js@v4.0.1/dist/tesseract.min.js"></script>
+<style>
+:root {
+  --bg: #f0f4f8;
+  --bg2: #ffffff;
+  --bg3: #e8eef5;
+  --sidebar: #ffffff;
+  --text: #1a2332;
+  --text2: #4a5568;
+  --text3: #8a9ab5;
+  --primary: #2563eb;
+  --primary-light: #dbeafe;
+  --primary-dark: #1d4ed8;
+  --green: #10b981;
+  --green-light: #d1fae5;
+  --yellow: #f59e0b;
+  --yellow-light: #fef3c7;
+  --red: #ef4444;
+  --red-light: #fee2e2;
+  --purple: #8b5cf6;
+  --purple-light: #ede9fe;
+  --border: #e2e8f0;
+  --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  --sidebar-w: 260px;
+}
+[data-theme="dark"] {
+  --bg: #0f1523;
+  --bg2: #1a2235;
+  --bg3: #242d42;
+  --sidebar: #1a2235;
+  --text: #f0f4f8;
+  --text2: #a0aec0;
+  --text3: #4a5568;
+  --border: #2d3748;
+  --shadow: 0 2px 12px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+  --primary-light: #1e3a8a;
+  --green-light: #064e3b;
+  --yellow-light: #78350f;
+  --red-light: #7f1d1d;
+  --purple-light: #3b0764;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:var(--transition)}
+button{cursor:pointer;border:none;outline:none;font-family:inherit}
+input,textarea,select{font-family:inherit;outline:none;border:none}
+img{max-width:100%}
+a{text-decoration:none;color:inherit}
+#app{display:flex;min-height:100vh}
+/* SIDEBAR */
+#sidebar{width:var(--sidebar-w);background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:var(--transition);box-shadow:var(--shadow)}
+.sidebar-logo-new{padding:32px 20px 24px;display:flex;flex-direction:column;align-items:center;gap:16px;border-bottom:1px solid var(--border)}
+.sidebar-logo-new .new-logo-graphic{width:60px;height:60px;flex-shrink:0}
+.sidebar-logo-new .new-logo-text{font-size:24px;font-weight:800;letter-spacing:-0.5px;display:flex;align-items:center;font-family:'Inter',sans-serif}
+.sidebar-logo-new .text-black{color:var(--text)}
+.sidebar-logo-new .text-blue{color:#a8c7fa;margin:0 1px}
+.sidebar-user{padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.user-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--green),#34d399);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;flex-shrink:0;overflow:hidden}
+.user-avatar img{width:100%;height:100%;object-fit:cover}
+.user-info .name{font-weight:600;font-size:14px;color:var(--text)}
+.user-info .role{font-size:11px;color:var(--text3)}
+.sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}
+.nav-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);padding:8px 12px 4px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--radius-sm);color:var(--text2);font-size:14px;font-weight:500;cursor:pointer;transition:var(--transition);margin-bottom:2px;position:relative}
+.nav-item:hover{background:var(--bg);color:var(--primary)}
+.nav-item.active{background:var(--primary-light);color:var(--primary);font-weight:600}
+.nav-item .nav-icon{width:22px;text-align:center;font-size:15px}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border)}
+/* MAIN */
+#main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column}
+.section{display:none;padding:32px 36px;flex:1;animation:fadeInUp 0.35s ease}
+.section.active{display:block}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.section-title{font-size:26px;font-weight:800;color:var(--text)}
+.section-subtitle{font-size:14px;color:var(--text3);margin-top:2px}
+/* CARDS */
+.card{background:var(--bg2);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;transition:var(--transition)}
+.card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.grid{display:grid;gap:20px}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+/* STATS CARD */
+.stat-card{background:var(--bg2);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:var(--transition)}
+.stat-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.stat-card .stat-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px}
+.stat-card .stat-value{font-size:28px;font-weight:800;color:var(--text);line-height:1}
+.stat-card .stat-label{font-size:13px;color:var(--text3);margin-top:6px;font-weight:500}
+.stat-card .stat-change{font-size:12px;margin-top:8px;font-weight:600}
+.stat-card::after{content:'';position:absolute;right:-20px;top:-20px;width:100px;height:100px;border-radius:50%;opacity:0.06}
+.stat-blue .stat-icon{background:var(--primary-light);color:var(--primary)}
+.stat-blue::after{background:var(--primary)}
+.stat-green .stat-icon{background:var(--green-light);color:var(--green)}
+.stat-green::after{background:var(--green)}
+.stat-yellow .stat-icon{background:var(--yellow-light);color:var(--yellow)}
+.stat-yellow::after{background:var(--yellow)}
+.stat-red .stat-icon{background:var(--red-light);color:var(--red)}
+.stat-red::after{background:var(--red)}
+.stat-purple .stat-icon{background:var(--purple-light);color:var(--purple)}
+.stat-purple::after{background:var(--purple)}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;transition:var(--transition)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(37,99,235,0.4)}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:hover{background:#059669;transform:translateY(-1px)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#dc2626}
+.btn-outline{background:transparent;color:var(--primary);border:2px solid var(--primary)}
+.btn-outline:hover{background:var(--primary-light)}
+.btn-ghost{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--bg3);color:var(--text)}
+.btn-sm{padding:7px 14px;font-size:12px}
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-yellow{background:var(--yellow-light);color:var(--yellow)}
+.badge-red{background:var(--red-light);color:var(--red)}
+.badge-blue{background:var(--primary-light);color:var(--primary)}
+.badge-purple{background:var(--purple-light);color:var(--purple)}
+/* PROGRESS */
+.progress-bar{width:100%;height:8px;background:var(--bg3);border-radius:10px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:10px;transition:width 1s ease}
+/* FORM */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.form-input{width:100%;padding:11px 14px;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;transition:var(--transition)}
+.form-input:focus{border-color:var(--primary);background:var(--bg2)}
+.form-select{width:100%;padding:11px 14px;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;cursor:pointer;transition:var(--transition)}
+.form-select:focus{border-color:var(--primary)}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.active{display:flex;animation:fadeIn 0.2s ease}
+.modal{background:var(--bg2);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:scaleIn 0.25s ease}
+.modal-header{padding:24px 24px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.modal-title{font-size:18px;font-weight:700}
+.modal-close{width:34px;height:34px;border-radius:50%;background:var(--bg);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition)}
+.modal-close:hover{background:var(--red-light);color:var(--red)}
+.modal-body{padding:20px 24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.92)}to{opacity:1;transform:scale(1)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+/* TOAST */
+#toast-container{position:fixed;top:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px}
+.toast{background:var(--bg2);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:500;min-width:260px;max-width:360px;animation:slideInRight 0.35s ease;border-left:4px solid var(--primary)}
+.toast.success{border-left-color:var(--green)}
+.toast.error{border-left-color:var(--red)}
+.toast.warning{border-left-color:var(--yellow)}
+.toast-icon{font-size:18px}
+@keyframes slideInRight{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}
+/* CALENDAR */
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-header{font-size:11px;font-weight:700;text-align:center;padding:8px 0;color:var(--text3);text-transform:uppercase}
+.cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;position:relative;transition:var(--transition);font-size:13px;font-weight:500;color:var(--text2)}
+.cal-day:hover{background:var(--bg3)}
+.cal-day.today{background:var(--primary);color:#fff;font-weight:700}
+.cal-day.has-event::after{content:'';width:5px;height:5px;background:var(--green);border-radius:50%;position:absolute;bottom:4px}
+.cal-day.other-month{color:var(--text3)}
+.cal-day.selected{background:var(--primary-light);color:var(--primary);font-weight:700}
+/* TIMELINE */
+.timeline{position:relative;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:2px;background:var(--border)}
+.timeline-item{position:relative;margin-bottom:24px}
+.timeline-dot{position:absolute;left:-23px;top:4px;width:14px;height:14px;border-radius:50%;background:var(--primary);border:3px solid var(--bg2)}
+.timeline-date{font-size:11px;color:var(--text3);font-weight:600;margin-bottom:4px}
+.timeline-content{background:var(--bg);border-radius:var(--radius-sm);padding:14px;border:1px solid var(--border)}
+/* SLIDER */
+.wellness-slider{-webkit-appearance:none;width:100%;height:6px;border-radius:10px;background:var(--bg3);outline:none;transition:var(--transition)}
+.wellness-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--primary);cursor:pointer;box-shadow:0 2px 8px rgba(37,99,235,0.4);transition:var(--transition)}
+.wellness-slider::-webkit-slider-thumb:hover{transform:scale(1.2)}
+/* EMOJI SELECTOR */
+.emoji-selector{display:flex;gap:8px;flex-wrap:wrap}
+.emoji-btn{width:46px;height:46px;border-radius:12px;background:var(--bg);border:2px solid transparent;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition)}
+.emoji-btn:hover,.emoji-btn.selected{border-color:var(--primary);background:var(--primary-light);transform:scale(1.1)}
+/* SPECIALTY CARD */
+.spec-card{background:var(--bg2);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);transition:var(--transition);border:2px solid transparent;position:relative}
+.spec-card:hover{border-color:var(--primary);transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.spec-card.done{border-color:var(--green);opacity:0.85}
+.spec-card.urgent{border-color:var(--red)}
+.spec-icon{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:12px}
+.spec-name{font-size:16px;font-weight:700;margin-bottom:4px}
+.spec-desc{font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5}
+.spec-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+/* PORTAL */
+.portal-login{max-width:440px;margin:0 auto;text-align:center}
+.portal-dashboard{animation:fadeInUp 0.3s ease}
+/* BREATHING */
+.breathing-circle{width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#60a5fa);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:600;margin:20px auto;cursor:pointer;transition:transform 0.1s ease;box-shadow:0 0 0 0 rgba(37,99,235,0.4)}
+.breathing-circle.breathing-in{animation:breathIn 4s ease forwards}
+.breathing-circle.breathing-out{animation:breathOut 4s ease forwards}
+@keyframes breathIn{from{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,0.4)}to{transform:scale(1.4);box-shadow:0 0 0 30px rgba(37,99,235,0)}}
+@keyframes breathOut{from{transform:scale(1.4)}to{transform:scale(1)}}
+/* FILTER TABS */
+.filter-tabs{display:flex;gap:6px;margin-bottom:20px;background:var(--bg);padding:4px;border-radius:var(--radius-sm);width:fit-content}
+.filter-tab{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;transition:var(--transition)}
+.filter-tab.active{background:var(--bg2);color:var(--primary);box-shadow:var(--shadow)}
+/* SEARCH BAR */
+.search-bar{position:relative;margin-bottom:20px}
+.search-bar i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3)}
+.search-bar input{width:100%;padding:11px 14px 11px 42px;background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-sm);font-size:14px;color:var(--text);transition:var(--transition)}
+.search-bar input:focus{border-color:var(--primary)}
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-state i{font-size:52px;margin-bottom:16px;opacity:0.4}
+.empty-state h3{font-size:18px;font-weight:700;color:var(--text2);margin-bottom:8px}
+.empty-state p{font-size:14px;line-height:1.6}
+/* ONBOARDING */
+#onboarding{position:fixed;inset:0;background:linear-gradient(135deg,#1d4ed8,#0ea5e9);z-index:9999;display:flex;align-items:center;justify-content:center;color:#fff}
+.onboarding-card{background:rgba(255,255,255,0.12);backdrop-filter:blur(20px);border-radius:24px;padding:48px 40px;max-width:480px;width:100%;text-align:center;border:1px solid rgba(255,255,255,0.2);animation:scaleIn 0.4s ease}
+.onboarding-step{display:none}.onboarding-step.active{display:block}
+.step-indicator{display:flex;justify-content:center;gap:8px;margin-top:28px}
+.step-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.3);transition:var(--transition)}
+.step-dot.active{background:#fff;width:24px;border-radius:10px}
+/* BOTTOM NAV (mobile) */
+#bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);z-index:100;padding:8px 4px 12px}
+.bottom-nav-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.bottom-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:10px;cursor:pointer;transition:var(--transition);color:var(--text3);font-size:8px;font-weight:600}
+.bottom-nav-item i{font-size:18px}
+.bottom-nav-item.active{color:var(--primary)}
+/* CHART CONTAINER */
+.chart-wrap{position:relative;height:220px}
+.chart-wrap canvas{max-height:220px}
+/* SCORE RING */
+.score-ring{width:130px;height:130px;position:relative;margin:0 auto}
+.score-ring svg{transform:rotate(-90deg)}
+.score-ring .ring-bg{fill:none;stroke:var(--bg3);stroke-width:10}
+.score-ring .ring-fill{fill:none;stroke:var(--green);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.5s ease}
+.score-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-center .score-num{font-size:28px;font-weight:800;color:var(--text)}
+.score-center .score-label{font-size:10px;color:var(--text3);font-weight:600}
+/* INSIGHT CARDS */
+.insight-card{background:var(--bg);border-radius:var(--radius-sm);padding:14px 16px;border-left:4px solid var(--primary);margin-bottom:10px;font-size:13px;line-height:1.6;color:var(--text2)}
+.insight-card.warning{border-left-color:var(--yellow)}
+.insight-card.positive{border-left-color:var(--green)}
+/* RESPONSIVE */
+@media(max-width:900px){
+  #sidebar{transform:translateX(-100%);box-shadow:none}
+  #sidebar.open{transform:translateX(0);box-shadow:var(--shadow-lg)}
+  #main{margin-left:0;padding-bottom:80px}
+  .section{padding:20px 16px}
+  #bottom-nav{display:block}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .grid-3{grid-template-columns:repeat(2,1fr)}
+  .menu-toggle{display:flex!important}
+  .section-title{font-size:20px}
+}
+@media(max-width:600px){
+  .grid-2{grid-template-columns:1fr}
+  .grid-3{grid-template-columns:1fr}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+}
+.menu-toggle{display:none;width:40px;height:40px;background:var(--bg2);border-radius:10px;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);border:1px solid var(--border);color:var(--text);font-size:18px;position:fixed;top:16px;left:16px;z-index:200}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:99}
+.sidebar-overlay.active{display:block}
+/* MISC */
+.divider{height:1px;background:var(--border);margin:20px 0}
+.text-center{text-align:center}
+.flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}
+.mt-1{margin-top:4px}.mt-2{margin-top:8px}.mt-3{margin-top:12px}.mt-4{margin-top:16px}.mb-1{margin-bottom:4px}.mb-2{margin-bottom:8px}.mb-3{margin-bottom:12px}.mb-4{margin-bottom:16px}
+.fw-700{font-weight:700}.fw-600{font-weight:600}.text-sm{font-size:12px}.text-xs{font-size:11px}
+.color-green{color:var(--green)}.color-red{color:var(--red)}.color-yellow{color:var(--yellow)}.color-blue{color:var(--primary)}.color-gray{color:var(--text3)}
+/* MEDICAL ID CARD */
+.medical-id-card{background:linear-gradient(135deg,#1d4ed8 0%,#0ea5e9 50%,#06b6d4 100%);border-radius:20px;padding:28px;color:#fff;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(37,99,235,0.4)}
+.medical-id-card::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.08)}
+.medical-id-card::after{content:'';position:absolute;bottom:-60px;left:-20px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.05)}
+.medical-id-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:16px}
+.medical-id-number{font-size:22px;font-weight:800;letter-spacing:2px;font-family:monospace;margin-bottom:4px}
+.patient-score-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;margin-top:12px}
+/* QR SECTION */
+.qr-container{background:var(--bg2);border-radius:var(--radius);padding:24px;text-align:center;box-shadow:var(--shadow)}
+.qr-box{background:#fff;padding:16px;border-radius:16px;display:inline-block;margin:16px auto;box-shadow:0 4px 20px rgba(0,0,0,0.1)}
+/* PROFILE ADVANCED */
+.profile-hero{background:linear-gradient(135deg,var(--primary) 0%,#8b5cf6 100%);border-radius:20px;padding:32px;color:#fff;margin-bottom:24px;position:relative;overflow:hidden}
+.profile-hero::before{content:'🩺';position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:100px;opacity:0.08}
+.profile-avatar-lg{width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;color:#fff;border:4px solid rgba(255,255,255,0.4);overflow:hidden;flex-shrink:0}
+.profile-avatar-lg img{width:100%;height:100%;object-fit:cover}
+.profile-field{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--border)}
+.profile-field:last-child{border-bottom:none}
+.profile-field-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px}
+.profile-field-value{font-size:14px;color:var(--text);font-weight:500}
+/* QR MEDICAL VIEW */
+#qr-medical-view{position:fixed;inset:0;background:var(--bg);z-index:500;display:none;overflow-y:auto}
+#qr-medical-view.active{display:block;animation:fadeInUp 0.3s ease}
+.qr-view-header{background:linear-gradient(135deg,#1d4ed8,#0ea5e9);padding:28px 32px;color:#fff;position:relative}
+.qr-view-close{position:absolute;top:20px;right:20px;width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:18px;transition:var(--transition)}
+.qr-view-close:hover{background:rgba(255,255,255,0.35)}
+.qr-view-body{max-width:900px;margin:0 auto;padding:32px 24px}
+.qr-specialty-row{display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:8px;transition:var(--transition)}
+.qr-specialty-row:hover{background:var(--bg3)}
+.qr-history-item{padding:14px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:10px;border-left:4px solid var(--primary)}
+/* PREVENTIVE TEST */
+.test-card{background:var(--bg2);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+.test-question{margin-bottom:20px}
+.test-question-title{font-weight:700;font-size:15px;color:var(--text);margin-bottom:12px}
+.test-option{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--radius-sm);border:2px solid var(--border);cursor:pointer;transition:var(--transition);margin-bottom:6px;font-size:14px}
+.test-option:hover{border-color:var(--primary);background:var(--primary-light)}
+.test-option.selected{border-color:var(--primary);background:var(--primary-light);color:var(--primary);font-weight:600}
+/* GLASS EFFECT */
+.glass{background:rgba(255,255,255,0.08);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.15)}
+[data-theme="dark"] .glass{background:rgba(0,0,0,0.2)}
+/* UPLOAD AREA */
+.upload-area{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:32px;text-align:center;cursor:pointer;transition:var(--transition);background:var(--bg)}
+.upload-area:hover,.upload-area.dragover{border-color:var(--primary);background:var(--primary-light)}
+.upload-area i{font-size:36px;color:var(--text3);margin-bottom:12px}
+/* RECOMMENDATION CARDS */
+.rec-card{background:var(--bg2);border-radius:var(--radius-sm);padding:16px;border-left:4px solid var(--purple);margin-bottom:10px;display:flex;gap:14px;align-items:flex-start}
+.rec-card-icon{width:40px;height:40px;background:var(--purple-light);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+/* SCORE CARD ENHANCED */
+.score-detail-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.score-detail-row:last-child{border-bottom:none}
+/* RESPONSIVE NEW */
+@media(max-width:900px){
+  .qr-view-body{padding:20px 16px}
+  .medical-id-card{padding:20px}
+  .profile-hero{padding:24px 20px}
+}
+/* SOS BUTTON & VIEW */
+.sos-btn { position: fixed; bottom: 90px; right: 24px; width: 60px; height: 60px; background: var(--red); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5); z-index: 1000; cursor: pointer; animation: sos-pulse 2s infinite; border: 3px solid #fff; }
+@keyframes sos-pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+#sos-view { position: fixed; inset: 0; background: var(--red); z-index: 9999; display: none; color: #fff; padding: 40px 24px; overflow-y: auto; }
+#sos-view.active { display: block; animation: slideInUp 0.4s ease; }
+.sos-card { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 24px; padding: 24px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.2); }
+.sos-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; margin-bottom: 4px; }
+.sos-value { font-size: 20px; font-weight: 800; }
+.sos-header { text-align: center; margin-bottom: 32px; }
+.sos-close { position: absolute; top: 20px; right: 20px; font-size: 28px; cursor: pointer; opacity: 0.8; }
+.tut-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:0.3s}
+.tut-dot.active{width:24px;background:var(--primary);border-radius:4px}
+.emoji-btn.selected{background:var(--primary);color:#fff;transform:scale(1.1)}
+.habit-item{background:var(--bg);padding:12px;border-radius:12px;border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600;transition:var(--transition)}
+.habit-item:hover{background:var(--bg2);border-color:var(--primary)}
+.habit-item.active{border-color:var(--green);background:var(--green-light);color:var(--green)}
+.habit-check{font-size:16px;opacity:0.7}
+.habit-item.active .habit-check{color:var(--green);opacity:1}
+</style>
+</head>
+<body>
+<div id="onboarding">
+<div class="onboarding-card">
+<div class="onboarding-step active" id="ob-1">
+<div style="font-size:64px;margin-bottom:16px">🩺</div>
+<h2 style="font-size:28px;font-weight:800;margin-bottom:10px">Bienvenido a Chequeate</h2>
+<p style="opacity:0.85;line-height:1.7;font-size:15px">Tu compañero de prevención médica y bienestar. Organiza tus chequeos, registra tus emociones y cuida tu salud integral.</p>
+</div>
+<div class="onboarding-step" id="ob-2">
+<div style="font-size:64px;margin-bottom:16px">👤</div>
+<h2 style="font-size:24px;font-weight:800;margin-bottom:16px">¿Cómo te llamás?</h2>
+<input id="ob-name" type="text" placeholder="Tu nombre" style="width:100%;padding:14px 18px;border-radius:12px;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.15);color:#fff;font-size:16px;font-family:inherit;outline:none;text-align:center" />
+<p style="opacity:0.7;font-size:13px;margin-top:10px">Podés cambiarlo después en Configuración</p>
+</div>
+<div class="onboarding-step" id="ob-3">
+<div style="font-size:64px;margin-bottom:16px">🎉</div>
+<h2 style="font-size:24px;font-weight:800;margin-bottom:10px">¡Todo listo!</h2>
+<p style="opacity:0.85;line-height:1.7;font-size:15px">Tu historial médico, turnos y bienestar emocional en un solo lugar. Empecemos a cuidarte.</p>
+</div>
+<div style="margin-top:28px;display:flex;gap:12px;justify-content:center">
+<button class="btn btn-ghost" id="ob-back" onclick="obBack()" style="display:none;background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.3)">Atrás</button>
+<button class="btn" id="ob-next" onclick="obNext()" style="background:#fff;color:#1d4ed8;min-width:130px">Comenzar</button>
+</div>
+<div class="step-indicator">
+<div class="step-dot active" id="dot-0"></div>
+<div class="step-dot" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+    </div>
+  </div>
+</div>
+<button class="sos-btn" id="sos-btn" onclick="openSOS()" title="Emergencia SOS"><i class="fas fa-exclamation-triangle"></i></button>
+
+<div id="sos-view">
+    <div class="sos-close" onclick="closeSOS()">×</div>
+    <div class="sos-header">
+        <div style="font-size:60px;margin-bottom:12px">🚑</div>
+        <h2 style="font-size:28px;font-weight:900">FICHA DE EMERGENCIA</h2>
+        <p style="opacity:0.9">Información crítica para personal médico</p>
+    </div>
+    
+    <div class="sos-card" style="background: #fff; color: var(--red);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div class="sos-label" style="color: var(--red); opacity: 0.6;">Paciente</div>
+                <div class="sos-value" id="sos-name" style="font-size:24px">Usuario</div>
+            </div>
+            <div style="text-align:right">
+                <div class="sos-label" style="color: var(--red); opacity: 0.6;">Sangre</div>
+                <div class="sos-value" id="sos-blood" style="font-size:32px">O+</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-2">
+        <div class="sos-card">
+            <div class="sos-label">Alergias</div>
+            <div class="sos-value" id="sos-allergies">Ninguna</div>
+        </div>
+        <div class="sos-card">
+            <div class="sos-label">Contacto Emergencia</div>
+            <div class="sos-value" id="sos-contact">-</div>
+            <a id="sos-call" href="#" class="btn" style="background:#fff; color:var(--red); margin-top:12px; width:100%; justify-content:center"><i class="fas fa-phone"></i> Llamar</a>
+        </div>
+    </div>
+
+    <div class="sos-card">
+        <div class="sos-label">Medicación Actual</div>
+        <div class="sos-value" id="sos-meds" style="font-size:16px; font-weight:600">No registrada</div>
+    </div>
+
+    <div class="sos-card">
+        <div class="sos-label">Enfermedades/Preexistentes</div>
+        <div class="sos-value" id="sos-pre" style="font-size:16px; font-weight:600">Ninguna</div>
+    </div>
+
+    <div style="text-align:center; margin-top:30px; opacity:0.8; font-size:12px">
+        Ficha generada por Chequeate Salud Integral
+    </div>
+</div>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+<button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+<div id="app">
+<nav id="sidebar">
+<div class="sidebar-logo-new">
+<div class="new-logo-graphic">
+<svg viewBox="0 0 100 100" width="100%" height="100%">
+<rect x="12" y="41" width="76" height="26" rx="6" fill="var(--text)" />
+<rect x="36" y="41" width="28" height="50" rx="6" fill="var(--text)" />
+<circle cx="50" cy="27" r="16" fill="var(--text)" />
+<path d="M 58 41 C 74 43, 76 60, 60 67 L 55 69" fill="none" stroke="var(--sidebar)" stroke-width="3" stroke-linecap="round" />
+<circle cx="52" cy="71" r="3.5" fill="var(--text)" stroke="var(--sidebar)" stroke-width="3" />
+</svg>
+</div>
+<div class="new-logo-text">
+<span class="text-black">che</span><span class="text-blue">qu</span><span class="text-black">eate</span>
+</div>
+</div>
+<div class="sidebar-user">
+<div class="user-avatar" id="sidebar-avatar">?</div>
+<div class="user-info"><div class="name" id="sidebar-name">Usuario</div><div class="role">Paciente</div></div>
+</div>
+<div class="sidebar-nav">
+<div class="nav-section-title">Principal</div>
+<div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard"><span class="nav-icon"><i class="fas fa-home"></i></span>Dashboard</div>
+<div class="nav-item" onclick="navigate('perfil')" id="nav-perfil"><span class="nav-icon"><i class="fas fa-id-card"></i></span>Mi Perfil Médico</div>
+<div class="nav-item" onclick="navigate('especialidades')" id="nav-especialidades"><span class="nav-icon"><i class="fas fa-stethoscope"></i></span>Especialidades</div>
+<div class="nav-item" onclick="navigate('calendario')" id="nav-calendario"><span class="nav-icon"><i class="fas fa-calendar-alt"></i></span>Calendario</div>
+<div class="nav-section-title" style="margin-top:8px">Mi Salud</div>
+<div class="nav-item" onclick="navigate('historial')" id="nav-historial"><span class="nav-icon"><i class="fas fa-folder-medical"></i></span>Historial Médico</div>
+<div class="nav-item" onclick="navigate('bienestar')" id="nav-bienestar"><span class="nav-icon"><i class="fas fa-brain"></i></span>Bienestar Emocional</div>
+<div class="nav-item" onclick="navigate('test')" id="nav-test"><span class="nav-icon"><i class="fas fa-clipboard-list"></i></span>Test Preventivo</div>
+<div class="nav-item" onclick="navigate('vitales')" id="nav-vitales"><span class="nav-icon"><i class="fas fa-chart-line"></i></span>Signos Vitales</div>
+<div class="nav-item" onclick="navigate('vacunas')" id="nav-vacunas"><span class="nav-icon"><i class="fas fa-syringe"></i></span>Vacunación</div>
+<div class="nav-item" onclick="navigate('laboratorio')" id="nav-laboratorio"><span class="nav-icon"><i class="fas fa-microscope"></i></span>Laboratorio</div>
+<div class="nav-item" onclick="navigate('medicacion')" id="nav-medicacion"><span class="nav-icon"><i class="fas fa-pills"></i></span>Medicación</div>
+<div class="nav-section-title" style="margin-top:8px">Sistema</div>
+<div class="nav-item" onclick="navigate('config')" id="nav-config"><span class="nav-icon"><i class="fas fa-cog"></i></span>Configuración</div>
+</div>
+<div class="sidebar-footer">
+<div style="font-size:11px;color:var(--text3);text-align:center">Chequeate v2.0 · Tu salud primero</div>
+</div>
+</nav>
+<main id="main">
+<div id="toast-container"></div>
+<!-- DASHBOARD -->
+<section class="section active" id="s-dashboard">
+<div class="section-header">
+<div><div class="section-title" id="dash-greeting">Buenos días 👋</div><div class="section-subtitle">Tu resumen de salud preventiva</div></div>
+<button class="btn btn-primary" onclick="openModal('modal-turno')"><i class="fas fa-plus"></i>Nuevo Turno</button>
+</div>
+<div class="grid grid-4" style="margin-bottom:24px">
+<div class="stat-card stat-blue"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-value" id="dash-realizados">0</div><div class="stat-label">Chequeos realizados</div></div>
+<div class="stat-card stat-green"><div class="stat-icon"><i class="fas fa-calendar-check"></i></div><div class="stat-value" id="dash-proximos">0</div><div class="stat-label">Próximos turnos</div></div>
+<div class="stat-card stat-yellow"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-value" id="dash-pendientes">0</div><div class="stat-label">Estudios pendientes</div></div>
+<div class="stat-card stat-red"><div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div><div class="stat-value" id="dash-urgentes">0</div><div class="stat-label">Atención requerida</div></div>
+</div>
+<div class="grid grid-2" style="margin-bottom:24px">
+<div class="card">
+<div class="flex items-center justify-between mb-3"><div style="font-weight:700;font-size:16px">Score de Prevención</div><span class="badge badge-green" id="dash-score-badge">Bueno</span></div>
+<div class="score-ring"><svg viewBox="0 0 100 100" width="130" height="130"><circle class="ring-bg" cx="50" cy="50" r="42"/><circle class="ring-fill" id="score-ring-fill" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/></svg><div class="score-center"><div class="score-num" id="dash-score">0</div><div class="score-label">/ 100</div></div></div>
+<div style="margin-top:16px">
+<div class="flex justify-between text-sm mb-1"><span style="color:var(--text2)">Chequeos completados</span><span id="prog-chequeos-val" style="font-weight:700">0%</span></div>
+<div class="progress-bar"><div class="progress-fill" id="prog-chequeos" style="background:var(--green);width:0%"></div></div>
+<div class="flex justify-between text-sm mb-1 mt-3"><span style="color:var(--text2)">Bienestar emocional</span><span id="prog-bienestar-val" style="font-weight:700">0%</span></div>
+<div class="progress-bar"><div class="progress-fill" id="prog-bienestar" style="background:var(--primary);width:0%"></div></div>
+</div>
+</div>
+<div class="card">
+<div style="font-weight:700;font-size:16px;margin-bottom:16px">Chequeos por Mes</div>
+<div class="chart-wrap"><canvas id="chart-dashboard"></canvas></div>
+</div>
+</div>
+<div class="grid grid-2" style="margin-bottom:24px">
+<div class="card">
+<div class="flex items-center justify-between mb-3"><div style="font-weight:700;font-size:16px"><i class="fas fa-calendar-alt color-blue" style="margin-right:8px"></i>Próximos Turnos</div></div>
+<div id="dash-proximos-list"><div class="empty-state" style="padding:20px"><i class="fas fa-calendar" style="font-size:30px"></i><p>No hay turnos próximos</p></div></div>
+</div>
+<div class="card">
+<div style="font-weight:700;font-size:16px;margin-bottom:16px"><i class="fas fa-robot color-purple" style="margin-right:8px"></i>Asistente Preventivo</div>
+<div id="ai-insights"><div class="insight-card positive"><i class="fas fa-info-circle" style="margin-right:6px;color:var(--green)"></i>Completá tu perfil de salud para recibir recomendaciones personalizadas.</div></div>
+</div>
+</div>
+<div class="grid grid-4">
+<div class="card" style="background:linear-gradient(135deg,var(--primary),#3b82f6);color:#fff">
+<div style="font-size:13px;opacity:0.85;margin-bottom:4px">Último análisis</div>
+<div style="font-size:18px;font-weight:700" id="widget-analisis">Sin registrar</div>
+<div style="font-size:12px;opacity:0.7;margin-top:4px">Análisis de sangre</div>
+</div>
+<div class="card" style="background:linear-gradient(135deg,var(--green),#34d399);color:#fff">
+<div style="font-size:13px;opacity:0.85;margin-bottom:4px">Control cardíaco</div>
+<div style="font-size:18px;font-weight:700" id="widget-cardio">Sin registrar</div>
+<div style="font-size:12px;opacity:0.7;margin-top:4px">Cardiología</div>
+</div>
+<div class="card" style="background:linear-gradient(135deg,var(--purple),#a78bfa);color:#fff">
+<div style="font-size:13px;opacity:0.85;margin-bottom:4px">Bienestar actual</div>
+<div style="font-size:18px;font-weight:700" id="widget-bienestar">Sin datos</div>
+<div style="font-size:12px;opacity:0.7;margin-top:4px">Nivel de energía</div>
+</div>
+<div class="card" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff;cursor:pointer" onclick="navigate('perfil')">
+<div style="font-size:13px;opacity:0.85;margin-bottom:4px">Tu ID Médico</div>
+<div style="font-size:14px;font-weight:800;letter-spacing:1px;font-family:monospace" id="widget-patient-id">CHK-...</div>
+<div style="font-size:11px;opacity:0.7;margin-top:4px;display:flex;align-items:center;gap:4px"><i class="fas fa-qrcode"></i>Ver perfil completo</div>
+</div>
+</div>
+</section>
+<!-- ESPECIALIDADES -->
+<section class="section" id="s-especialidades">
+<div class="section-header">
+<div><div class="section-title">Especialidades Médicas</div><div class="section-subtitle">Gestioná tus controles y chequeos preventivos</div></div>
+<button class="btn btn-primary" onclick="openModal('modal-especialidad')"><i class="fas fa-plus"></i>Agregar</button>
+</div>
+<div class="filter-tabs">
+<div class="filter-tab active" onclick="filterEsp('todas',this)">Todas</div>
+<div class="filter-tab" onclick="filterEsp('pendiente',this)">Pendientes</div>
+<div class="filter-tab" onclick="filterEsp('realizada',this)">Realizadas</div>
+<div class="filter-tab" onclick="filterEsp('urgente',this)">Urgentes</div>
+</div>
+<div class="grid grid-3" id="esp-grid"></div>
+</section>
+
+<!-- CALENDARIO -->
+<section class="section" id="s-calendario">
+<div class="section-header">
+<div><div class="section-title">Calendario Médico</div><div class="section-subtitle">Agendá y gestioná tus turnos</div></div>
+<button class="btn btn-primary" onclick="openModal('modal-turno')"><i class="fas fa-plus"></i>Nuevo Turno</button>
+</div>
+<div class="grid grid-2" style="align-items:start">
+<div class="card">
+<div class="flex items-center justify-between mb-4">
+<button class="btn btn-ghost btn-sm" onclick="calPrev()"><i class="fas fa-chevron-left"></i></button>
+<div style="font-weight:700;font-size:16px" id="cal-month-title">Mayo 2026</div>
+<button class="btn btn-ghost btn-sm" onclick="calNext()"><i class="fas fa-chevron-right"></i></button>
+</div>
+<div class="calendar-grid" id="cal-days-header">
+<div class="cal-header">Dom</div><div class="cal-header">Lun</div><div class="cal-header">Mar</div><div class="cal-header">Mié</div><div class="cal-header">Jue</div><div class="cal-header">Vie</div><div class="cal-header">Sáb</div>
+</div>
+<div class="calendar-grid" id="cal-grid"></div>
+</div>
+<div class="card">
+<div style="font-weight:700;font-size:16px;margin-bottom:16px" id="cal-selected-date">Turnos del mes</div>
+<div id="cal-events-list"><div class="empty-state" style="padding:20px"><i class="fas fa-calendar" style="font-size:30px"></i><p>Seleccioná un día para ver los turnos</p></div></div>
+</div>
+</div>
+</section>
+
+<!-- HISTORIAL -->
+<section class="section" id="s-historial">
+<div class="section-header">
+<div><div class="section-title">Historial Médico</div><div class="section-subtitle">Tu expediente clínico digital</div></div>
+<button class="btn btn-primary" onclick="openModal('modal-historial')"><i class="fas fa-plus"></i>Agregar Estudio</button>
+</div>
+<div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Buscar estudios, médicos, especialidades..." onkeyup="searchHistorial(this.value)" /></div>
+<div class="filter-tabs">
+<div class="filter-tab active" onclick="filterHist('todas',this)">Todos</div>
+<div class="filter-tab" onclick="filterHist('laboratorio',this)">Laboratorio</div>
+<div class="filter-tab" onclick="filterHist('imagen',this)">Imágenes</div>
+<div class="filter-tab" onclick="filterHist('consulta',this)">Consultas</div>
+</div>
+<div id="historial-timeline"></div>
+</section>
+
+<!-- BIENESTAR -->
+<section class="section" id="s-bienestar">
+<div class="section-header">
+<div><div class="section-title">Bienestar Emocional</div><div class="section-subtitle">Registrá cómo te sentís hoy</div></div>
+<button class="btn btn-primary" onclick="openModal('modal-bienestar')"><i class="fas fa-plus"></i>Registrar hoy</button>
+</div>
+<div class="grid grid-2" style="margin-bottom:24px">
+<div class="card">
+<div style="font-weight:700;font-size:16px;margin-bottom:16px">Hábitos del Día</div>
+<div id="wellness-habits" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="habit-item" onclick="toggleHabit('agua')"><i class="fas fa-glass-water"></i> Hidratación <span class="habit-check" id="hb-agua"><i class="far fa-circle"></i></span></div>
+    <div class="habit-item" onclick="toggleHabit('meditar')"><i class="fas fa-om"></i> Meditación <span class="habit-check" id="hb-meditar"><i class="far fa-circle"></i></span></div>
+    <div class="habit-item" onclick="toggleHabit('pantallas')"><i class="fas fa-mobile-alt-slash"></i> Pausa Digital <span class="habit-check" id="hb-pantallas"><i class="far fa-circle"></i></span></div>
+    <div class="habit-item" onclick="toggleHabit('lectura')"><i class="fas fa-book-open"></i> Lectura <span class="habit-check" id="hb-lectura"><i class="far fa-circle"></i></span></div>
+</div>
+</div>
+<div class="card">
+<div style="font-weight:700;font-size:16px;margin-bottom:16px">Registro de Síntomas</div>
+<div style="display:flex;gap:10px;margin-bottom:15px">
+    <input type="text" class="form-input" id="symptom-text" placeholder="Ej: Dolor de cabeza leve, acidez..." style="flex:1">
+    <button class="btn btn-primary" onclick="addSymptom()"><i class="fas fa-plus"></i></button>
+</div>
+<div id="symptom-history" style="max-height:150px;overflow-y:auto;font-size:13px">
+    <!-- Lista de síntomas -->
+</div>
+</div>
+
+</div>
+
+<div class="card" id="wellness-insight-card" style="display:none;margin-bottom:20px;background:var(--purple-light);border:none">
+<div style="display:flex;gap:16px;align-items:center">
+    <div style="font-size:32px">🧠</div>
+    <div>
+        <div style="font-weight:800;color:var(--purple);font-size:15px">Insight de Bienestar</div>
+        <div id="wellness-insight-text" style="font-size:13px;color:var(--text2);line-height:1.5">Detectamos niveles altos de estrés. Te recomendamos realizar el ejercicio de respiración 4-7-8 antes de dormir.</div>
+    </div>
+</div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:24px">
+<div class="card">
+<div style="font-weight:700;font-size:16px;margin-bottom:16px">Tendencia Emocional</div>
+<div class="chart-wrap"><canvas id="chart-bienestar"></canvas></div>
+</div>
+<div class="card">
+<div style="font-weight:700;font-size:16px;margin-bottom:16px"><i class="fas fa-wind color-blue" style="margin-right:8px"></i>Ejercicio de Respiración</div>
+<p style="font-size:13px;color:var(--text3);margin-bottom:12px;line-height:1.6">La respiración diafragmática reduce el estrés y mejora la concentración. Tocá el círculo para comenzar.</p>
+<div class="breathing-circle" id="breath-circle" onclick="startBreathing()">Iniciar</div>
+<div style="text-align:center;font-size:13px;color:var(--text3);margin-top:8px" id="breath-text">Presioná para comenzar</div>
+</div>
+</div>
+<div class="grid grid-2">
+<div class="card">
+<div style="font-weight:700;font-size:16px;margin-bottom:16px">Insights de Bienestar</div>
+<div id="bienestar-insights"><div class="insight-card">Registrá al menos 3 días para ver tendencias personalizadas.</div></div>
+</div>
+<div class="card">
+<div style="font-weight:700;font-size:16px;margin-bottom:16px">Consejos Preventivos</div>
+<div id="tips-container"></div>
+</div>
+</div>
+</section>
+
+
+
+<!-- CONFIG -->
+<section class="section" id="s-config">
+<div class="section-header">
+<div><div class="section-title">Configuración</div><div class="section-subtitle">Personalizá tu experiencia</div></div>
+</div>
+<div class="grid grid-2">
+<div class="card">
+<div style="font-weight:700;font-size:16px;margin-bottom:20px"><i class="fas fa-user color-blue" style="margin-right:8px"></i>Perfil de Usuario</div>
+<div style="text-align:center;margin-bottom:20px">
+<div class="user-avatar" id="config-avatar" style="width:80px;height:80px;font-size:28px;margin:0 auto 12px;cursor:pointer" onclick="document.getElementById('avatar-upload').click()">?</div>
+<div style="font-size:12px;color:var(--text3)">Tocá para cambiar la foto</div>
+<input type="file" id="avatar-upload" accept="image/*" style="display:none" onchange="changeAvatar(this)">
+</div>
+<div class="form-group"><label class="form-label">Nombre</label><input type="text" class="form-input" id="config-name" placeholder="Tu nombre" /></div>
+<div class="form-group"><label class="form-label">Edad</label><input type="number" class="form-input" id="config-age" placeholder="Tu edad" /></div>
+<button class="btn btn-primary" style="width:100%;justify-content:center" onclick="saveConfig()"><i class="fas fa-save"></i>Guardar Cambios</button>
+</div>
+<div class="card">
+<div style="font-weight:700;font-size:16px;margin-bottom:20px"><i class="fas fa-palette color-purple" style="margin-right:8px"></i>Apariencia</div>
+<div class="flex items-center justify-between" style="padding:14px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:12px">
+<div><div style="font-weight:600;font-size:14px">Modo Oscuro</div><div style="font-size:12px;color:var(--text3)">Cambiá el tema de la app</div></div>
+<label style="position:relative;width:50px;height:26px;cursor:pointer">
+<input type="checkbox" id="dark-toggle" style="opacity:0;width:0;height:0" onchange="toggleDark(this)">
+<span style="position:absolute;inset:0;background:var(--border);border-radius:13px;transition:var(--transition)" id="toggle-track"></span>
+<span style="position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:var(--transition);box-shadow:var(--shadow)" id="toggle-thumb"></span>
+</label>
+</div>
+<div class="divider"></div>
+<div style="font-weight:700;font-size:16px;margin-bottom:20px"><i class="fas fa-database color-green" style="margin-right:8px"></i>Datos y Seguridad</div>
+<button class="btn btn-ghost" style="width:100%;justify-content:center;margin-bottom:10px" onclick="exportPDF()"><i class="fas fa-file-pdf"></i>Exportar Reporte PDF</button>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+    <button class="btn btn-outline btn-sm" onclick="exportData()"><i class="fas fa-download"></i> Backup JSON</button>
+    <button class="btn btn-outline btn-sm" onclick="document.getElementById('import-file').click()"><i class="fas fa-upload"></i> Importar JSON</button>
+    <input type="file" id="import-file" hidden accept=".json" onchange="importData(this)" />
+</div>
+<button class="btn btn-ghost" style="width:100%;justify-content:center;margin-bottom:10px" onclick="requestNotifications()"><i class="fas fa-bell"></i>Activar recordatorios</button>
+<button class="btn btn-danger" style="width:100%;justify-content:center" onclick="confirmDeleteData()"><i class="fas fa-trash"></i>Borrar todos los datos</button>
+</div>
+</div>
+</section>
+
+<!-- PERFIL MÉDICO -->
+<section class="section" id="s-perfil">
+<div class="section-header">
+<div><div class="section-title">Mi Perfil Médico</div><div class="section-subtitle">Tu identidad clínica digital</div></div>
+<button class="btn btn-primary" onclick="saveProfile()"><i class="fas fa-save"></i>Guardar Perfil</button>
+</div>
+<!-- HERO CARD -->
+<div class="profile-hero" style="margin-bottom:24px">
+<div class="flex items-center gap-4" style="flex-wrap:wrap">
+<div class="profile-avatar-lg" id="profile-avatar-display" onclick="document.getElementById('profile-photo-upload').click()" style="cursor:pointer" title="Cambiar foto">
+<span id="profile-avatar-initials">?</span>
+</div>
+<input type="file" id="profile-photo-upload" accept="image/*" style="display:none" onchange="changeProfilePhoto(this)">
+<div style="flex:1;min-width:200px">
+<div style="font-size:24px;font-weight:800;margin-bottom:4px" id="profile-hero-name">Tu Nombre</div>
+<div style="opacity:0.8;font-size:14px;margin-bottom:8px" id="profile-hero-sub">Sin datos · Sin edad</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<span class="glass" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600" id="profile-hero-blood">🩸 -</span>
+<span class="glass" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600" id="profile-hero-obra">🏥 -</span>
+</div>
+</div>
+<div style="text-align:center">
+<div style="font-size:11px;opacity:0.7;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Score Preventivo</div>
+<div style="font-size:40px;font-weight:900" id="profile-hero-score">--</div>
+<div style="font-size:11px;opacity:0.7">/ 100</div>
+</div>
+</div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:24px">
+<!-- ID + QR -->
+<div class="medical-id-card">
+<div style="position:relative;z-index:1">
+<div class="medical-id-badge"><i class="fas fa-shield-alt"></i> ID MÉDICO VERIFICADO</div>
+<div class="medical-id-number" id="profile-patient-id">CHK-2026-0000</div>
+<div style="font-size:13px;opacity:0.8;margin-bottom:4px">Paciente registrado en Chequeate</div>
+<div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+<button class="btn glass btn-sm" onclick="copyPatientId()" style="color:#fff;font-size:12px"><i class="fas fa-copy"></i>Copiar ID</button>
+<button class="btn glass btn-sm" onclick="enterMedicalView()" style="color:#fff;font-size:12px"><i class="fas fa-qrcode"></i>Ver QR Médico</button>
+</div>
+</div>
+</div>
+<!-- QR MINIATURA -->
+<div class="qr-container">
+<div style="font-weight:700;font-size:15px;margin-bottom:4px"><i class="fas fa-qrcode color-blue" style="margin-right:6px"></i>QR Médico Central</div>
+<div style="font-size:12px;color:var(--text3);margin-bottom:4px">Escaneá para ver tu expediente clínico</div>
+<div class="qr-box"><div id="qr-canvas"></div></div>
+<div style="font-size:11px;color:var(--text3)">Compartí con tu médico para acceso rápido</div>
+<div style="display:flex; flex-direction:column; gap:8px; margin-top:12px">
+    <button class="btn btn-primary btn-sm" onclick="enterMedicalView()"><i class="fas fa-external-link-alt"></i> Abrir Vista Médica</button>
+</div>
+</div>
+
+
+</div>
+
+<!-- FORM PERFIL -->
+<div class="grid grid-2">
+<div class="card">
+<div style="font-weight:700;font-size:15px;margin-bottom:20px"><i class="fas fa-user color-blue" style="margin-right:8px"></i>Datos Personales</div>
+<div class="form-group"><label class="form-label">Nombre completo</label><input type="text" class="form-input" id="pf-nombre" placeholder="Tu nombre completo" oninput="updateProfileHero()"></div>
+<div class="form-group"><label class="form-label">Fecha de nacimiento</label><input type="date" class="form-input" id="pf-nacimiento" onchange="updateProfileHero()"></div>
+<div class="form-group"><label class="form-label">Género</label>
+<select class="form-select" id="pf-genero"><option value="">Seleccionar...</option><option>Masculino</option><option>Femenino</option><option>No binario</option><option>Prefiero no decir</option></select></div>
+<div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="pf-email" placeholder="tu@email.com"></div>
+<div class="form-group"><label class="form-label">Teléfono</label><input type="tel" class="form-input" id="pf-telefono" placeholder="+54 11 ..."></div>
+<div class="form-group"><label class="form-label">Grupo sanguíneo</label>
+<select class="form-select" id="pf-sangre" onchange="updateProfileHero()"><option value="">Desconocido</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
+</div>
+<div class="card">
+<div style="font-weight:700;font-size:15px;margin-bottom:20px"><i class="fas fa-notes-medical color-green" style="margin-right:8px"></i>Datos Clínicos</div>
+<div class="form-group"><label class="form-label">Obra social / Prepaga</label><input type="text" class="form-input" id="pf-obra" placeholder="Ej: OSDE, Swiss Medical..." oninput="updateProfileHero()"></div>
+<div class="form-group"><label class="form-label">Contacto de emergencia</label><input type="text" class="form-input" id="pf-emergencia" placeholder="Nombre y teléfono"></div>
+<div class="form-group"><label class="form-label">Antecedentes familiares</label><textarea class="form-input" id="pf-antecedentes" rows="2" placeholder="Ej: diabetes, hipertensión..."></textarea></div>
+<div class="form-group"><label class="form-label">Enfermedades preexistentes</label><textarea class="form-input" id="pf-preexistentes" rows="2" placeholder="Enfermedades crónicas actuales..."></textarea></div>
+<div class="form-group"><label class="form-label">Alergias</label><input type="text" class="form-input" id="pf-alergias" placeholder="Ej: penicilina, mariscos..."></div>
+<div class="form-group"><label class="form-label">Medicación actual</label><textarea class="form-input" id="pf-medicacion" rows="2" placeholder="Medicamentos que tomás actualmente..."></textarea></div>
+</div>
+</div>
+</section>
+
+<!-- TEST PREVENTIVO -->
+<section class="section" id="s-test">
+<div class="section-header">
+<div><div class="section-title">Test Preventivo</div><div class="section-subtitle">Evaluá tus hábitos y recibí recomendaciones personalizadas</div></div>
+</div>
+<div class="card" style="margin-bottom:16px;background:var(--primary-light);border:1px solid var(--primary)">
+<div style="display:flex;gap:12px;align-items:flex-start">
+<i class="fas fa-info-circle" style="color:var(--primary);font-size:20px;margin-top:2px;flex-shrink:0"></i>
+<div style="font-size:13px;color:var(--primary);line-height:1.6"><strong>Aviso importante:</strong> Chequeate no reemplaza una consulta médica profesional. Este test es exclusivamente preventivo y orientativo. Las recomendaciones son generales y no constituyen diagnóstico.</div>
+</div>
+</div>
+<div id="test-container">
+<div class="test-card" id="test-step-0">
+<div style="text-align:center;margin-bottom:24px">
+<div style="font-size:52px;margin-bottom:12px">📋</div>
+<div style="font-size:20px;font-weight:800;margin-bottom:8px">Test de Prevención Médica</div>
+<div style="font-size:14px;color:var(--text3);line-height:1.6">Respondé algunas preguntas sobre tus hábitos y estado de salud general para recibir recomendaciones preventivas personalizadas.</div>
+<button class="btn btn-primary mt-4" onclick="startTest()"><i class="fas fa-play"></i>Comenzar Test</button>
+</div>
+</div>
+<div id="test-questions" style="display:none"></div>
+<div id="test-results" style="display:none"></div>
+</div>
+</section>
+
+<!-- SIGNOS VITALES -->
+<section class="section" id="s-vitales">
+<div class="section-header">
+<div><div class="section-title">Signos Vitales</div><div class="section-subtitle">Seguimiento de presión, glucosa y peso</div></div>
+<div style="display:flex;gap:10px">
+    <button class="btn btn-outline" id="btn-bt-sync" onclick="connectBluetoothHR()"><i class="fas fa-bluetooth-b"></i>Sincronizar Sensor</button>
+    <button class="btn btn-primary" onclick="openModal('modal-vitales')"><i class="fas fa-plus"></i>Nuevo Registro</button>
+</div>
+</div>
+<div id="bt-status-card" class="card" style="display:none;margin-bottom:20px;background:var(--primary-light);border:none">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px">
+            <i class="fas fa-heartbeat pulse" style="color:var(--red);font-size:24px"></i>
+            <div>
+                <div style="font-weight:800;color:var(--primary);font-size:14px">Sensor Conectado</div>
+                <div id="bt-device-name" style="font-size:12px;color:var(--text2)">Buscando datos...</div>
+            </div>
+        </div>
+        <div style="text-align:right">
+            <div id="bt-pulse-val" style="font-size:32px;font-weight:900;color:var(--primary)">--</div>
+            <div style="font-size:10px;font-weight:700;color:var(--text3)">BPM (PULSO)</div>
+        </div>
+    </div>
+</div>
+<div class="grid grid-4" style="margin-bottom:24px">
+<div class="stat-card stat-blue"><div class="stat-icon"><i class="fas fa-weight"></i></div><div class="stat-value" id="vit-peso">--</div><div class="stat-label">Último Peso (kg)</div></div>
+<div class="stat-card stat-purple"><div class="stat-icon"><i class="fas fa-human-capacity"></i></div><div class="stat-value" id="vit-imc">--</div><div class="stat-label">IMC Actual</div><div class="stat-change" id="vit-imc-cat">-</div></div>
+<div class="stat-card stat-red"><div class="stat-icon"><i class="fas fa-heartbeat"></i></div><div class="stat-value" id="vit-presion">--</div><div class="stat-label">Presión Art.</div></div>
+<div class="stat-card stat-yellow"><div class="stat-icon"><i class="fas fa-tint"></i></div><div class="stat-value" id="vit-glucosa">--</div><div class="stat-label">Glucosa (mg/dL)</div></div>
+</div>
+<div class="grid grid-2">
+<div class="card">
+<div style="font-weight:700;font-size:16px;margin-bottom:16px">Histórico de Peso</div>
+<div class="chart-wrap"><canvas id="chart-peso"></canvas></div>
+</div>
+<div class="card">
+<div style="font-weight:700;font-size:16px;margin-bottom:16px">Presión y Glucosa</div>
+<div class="chart-wrap"><canvas id="chart-vitals-mix"></canvas></div>
+</div>
+</div>
+</section>
+
+<!-- VACUNACIÓN -->
+<section class="section" id="s-vacunas">
+<div class="section-header">
+<div><div class="section-title">Carnet de Vacunación</div><div class="section-subtitle">Registro de dosis y refuerzos</div></div>
+<button class="btn btn-primary" onclick="openModal('modal-vacuna')"><i class="fas fa-plus"></i>Agregar Vacuna</button>
+</div>
+<div class="card">
+    <div id="vacunas-list" class="grid grid-2"></div>
+</div>
+</section>
+
+<!-- LABORATORIO -->
+<section class="section" id="s-laboratorio">
+<div class="section-header">
+<div><div class="section-title">Informes de Laboratorio</div><div class="section-subtitle">Gestión inteligente de análisis y estudios</div></div>
+<button class="btn btn-primary" onclick="openModal('modal-lab')"><i class="fas fa-file-upload"></i>Subir Informe</button>
+</div>
+<div id="lab-list" class="grid grid-2"></div>
+</section>
+
+<!-- MEDICACIÓN -->
+<section class="section" id="s-medicacion">
+<div class="section-header">
+<div><div class="section-title">Medicación y Tratamientos</div><div class="section-subtitle">Gestión de remedios y dosis</div></div>
+<button class="btn btn-primary" onclick="openModal('modal-med')"><i class="fas fa-plus"></i>Nueva Medicación</button>
+</div>
+<div id="med-list" class="grid grid-3"></div>
+</section>
+
+</main>
+</div>
+
+</nav>
+
+<!-- VISTA MÉDICA INDEPENDIENTE (FULL SCREEN) -->
+<div id="medical-interface" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:9999; overflow-y:auto;">
+    <div id="medical-header" style="background:var(--primary); color:#fff; padding:20px; position:sticky; top:0; z-index:100">
+        <div style="display:flex; justify-content:space-between; align-items:center; max-width:900px; margin:0 auto">
+            <div>
+                <div style="font-size:11px; text-transform:uppercase; opacity:0.8; letter-spacing:1px">Expediente Clínico Digital</div>
+                <div id="med-p-name" style="font-size:20px; font-weight:800">Cargando...</div>
+            </div>
+            <button class="btn" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.3)" onclick="exitMedicalView()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+    
+    <div style="max-width:900px; margin:20px auto; padding:0 20px pb-40">
+        <!-- ALERTAS CRÍTICAS -->
+        <div class="grid grid-2" style="margin-bottom:20px">
+            <div class="card" style="border-left:5px solid var(--red); background:#fff5f5">
+                <div style="color:var(--red); font-weight:800; font-size:12px; margin-bottom:8px"><i class="fas fa-exclamation-triangle"></i> ALERGIAS</div>
+                <div id="med-p-alergias" style="font-size:18px; font-weight:800; color:#c53030">Cargando...</div>
+            </div>
+            <div class="card" style="border-left:5px solid var(--primary)">
+                <div style="color:var(--primary); font-weight:800; font-size:12px; margin-bottom:8px"><i class="fas fa-tint"></i> GRUPO SANGUÍNEO</div>
+                <div id="med-p-sangre" style="font-size:18px; font-weight:800">Cargando...</div>
+            </div>
+        </div>
+
+        <!-- INFO RÁPIDA -->
+        <div class="grid grid-3" style="margin-bottom:20px">
+            <div class="card">
+                <div style="font-size:11px; color:var(--text3); font-weight:700">EDAD</div>
+                <div id="med-p-edad" style="font-weight:800">-</div>
+            </div>
+            <div class="card">
+                <div style="font-size:11px; color:var(--text3); font-weight:700">OBRA SOCIAL</div>
+                <div id="med-p-obra" style="font-weight:800">-</div>
+            </div>
+            <div class="card">
+                <div style="font-size:11px; color:var(--text3); font-weight:700">EMERGENCIA</div>
+                <div id="med-p-emergencia" style="font-weight:800">-</div>
+            </div>
+        </div>
+
+        <!-- MEDICACIÓN -->
+        <div class="card" style="margin-bottom:20px; border-left:5px solid var(--yellow)">
+            <div style="font-weight:800; font-size:14px; margin-bottom:10px"><i class="fas fa-pills color-yellow"></i> Medicación Actual</div>
+            <div id="med-p-medicacion" style="font-size:14px; line-height:1.6">-</div>
+        </div>
+
+        <!-- HISTORIAL DE ESTUDIOS -->
+        <div class="card" style="margin-bottom:20px">
+            <div style="font-weight:800; font-size:14px; margin-bottom:15px"><i class="fas fa-history color-purple"></i> Historial de Estudios e Informes</div>
+            <div id="med-p-historial"></div>
+        </div>
+
+        <!-- NOTAS MÉDICAS -->
+        <div class="card" style="border-top:4px solid var(--green)">
+            <div style="font-weight:800; font-size:14px; margin-bottom:15px"><i class="fas fa-comment-medical color-green"></i> Observaciones del Profesional</div>
+            
+            <div id="med-auth-section">
+                <p style="font-size:12px; color:var(--text3); margin-bottom:12px">Para dejar una observación, identifíquese:</p>
+                <div class="grid grid-2">
+                    <input type="text" id="med-auth-name" class="form-input" placeholder="Nombre (Dr/Dra...)">
+                    <input type="text" id="med-auth-id" class="form-input" placeholder="Matrícula MN/MP">
+                </div>
+                <textarea id="med-auth-note" class="form-input mt-2" rows="3" placeholder="Escriba su observación clínica..."></textarea>
+                <button class="btn btn-primary mt-2" style="width:100%; justify-content:center" onclick="saveMedObservation()">Guardar Observación</button>
+            </div>
+            
+            <div id="med-p-observaciones" style="margin-top:20px"></div>
+        </div>
+    </div>
+</div>
+<nav id="bottom-nav">
+<div class="bottom-nav-grid">
+<div class="bottom-nav-item active" onclick="navigate('dashboard')" id="bnav-dashboard"><i class="fas fa-home"></i>Inicio</div>
+<div class="bottom-nav-item" onclick="navigate('perfil')" id="bnav-perfil"><i class="fas fa-id-card"></i>Perfil</div>
+<div class="bottom-nav-item" onclick="navigate('vitales')" id="bnav-vitales"><i class="fas fa-chart-line"></i>Vitales</div>
+<div class="bottom-nav-item" onclick="navigate('bienestar')" id="bnav-bienestar"><i class="fas fa-brain"></i>Bienestar</div>
+<div class="bottom-nav-item" onclick="navigate('config')" id="bnav-config"><i class="fas fa-cog"></i>Config</div>
+</div>
+</nav>
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-turno">
+<div class="modal">
+<div class="modal-header"><div class="modal-title" id="modal-turno-title">Nuevo Turno</div><div class="modal-close" onclick="closeModal('modal-turno')"><i class="fas fa-times"></i></div></div>
+<div class="modal-body">
+<div class="form-group"><label class="form-label">Especialidad</label>
+<select class="form-select" id="turno-esp"><option value="">Seleccionar...</option><option>Clínica Médica</option><option>Cardiología</option><option>Oftalmología</option><option>Odontología</option><option>Dermatología</option><option>Análisis de sangre</option><option>Ginecología</option><option>Urología</option><option>Nutrición</option><option>Otra</option></select></div>
+<div class="form-group"><label class="form-label">Médico</label><input type="text" class="form-input" id="turno-medico" placeholder="Nombre del médico" /></div>
+<div class="form-group"><label class="form-label">Fecha</label><input type="date" class="form-input" id="turno-fecha" /></div>
+<div class="form-group"><label class="form-label">Hora</label><input type="time" class="form-input" id="turno-hora" /></div>
+<div class="form-group"><label class="form-label">Lugar</label><input type="text" class="form-input" id="turno-lugar" placeholder="Dirección o nombre del centro" /></div>
+<div class="form-group"><label class="form-label">Notas</label><textarea class="form-input" id="turno-notas" rows="3" placeholder="Indicaciones previas, preparación..."></textarea></div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-ghost" onclick="closeModal('modal-turno')">Cancelar</button>
+<button class="btn btn-primary" onclick="saveTurno()"><i class="fas fa-save"></i>Guardar Turno</button>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="modal-especialidad">
+<div class="modal">
+<div class="modal-header"><div class="modal-title">Agregar Especialidad</div><div class="modal-close" onclick="closeModal('modal-especialidad')"><i class="fas fa-times"></i></div></div>
+<div class="modal-body">
+<div class="form-group"><label class="form-label">Nombre</label><input type="text" class="form-input" id="esp-nombre" placeholder="Ej: Cardiología" /></div>
+<div class="form-group"><label class="form-label">Descripción</label><textarea class="form-input" id="esp-desc" rows="2" placeholder="Para qué sirve este control..."></textarea></div>
+<div class="form-group"><label class="form-label">Frecuencia recomendada</label>
+<select class="form-select" id="esp-frecuencia"><option>Anual</option><option>Semestral</option><option>Cada 2 años</option><option>Cada 3 años</option><option>Mensual</option><option>Según indicación médica</option></select></div>
+<div class="form-group"><label class="form-label">Estado</label>
+<select class="form-select" id="esp-estado"><option value="pendiente">Pendiente</option><option value="realizada">Realizada</option><option value="urgente">Urgente</option></select></div>
+<div class="form-group"><label class="form-label">Último control</label><input type="date" class="form-input" id="esp-ultimo" /></div>
+<div class="form-group"><label class="form-label">Médico responsable</label><input type="text" class="form-input" id="esp-medico" placeholder="Dr./Dra. ..." /></div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-ghost" onclick="closeModal('modal-especialidad')">Cancelar</button>
+<button class="btn btn-primary" onclick="saveEspecialidad()"><i class="fas fa-save"></i>Guardar</button>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="modal-historial">
+<div class="modal">
+<div class="modal-header"><div class="modal-title">Agregar Estudio</div><div class="modal-close" onclick="closeModal('modal-historial')"><i class="fas fa-times"></i></div></div>
+<div class="modal-body">
+<div class="form-group"><label class="form-label">Nombre del estudio</label><input type="text" class="form-input" id="hist-nombre" placeholder="Ej: Hemograma completo" /></div>
+<div class="form-group"><label class="form-label">Tipo</label>
+<select class="form-select" id="hist-tipo"><option value="laboratorio">Laboratorio</option><option value="imagen">Imagen</option><option value="consulta">Consulta</option><option value="otro">Otro</option></select></div>
+<div class="form-group"><label class="form-label">Especialidad</label><input type="text" class="form-input" id="hist-esp" placeholder="Especialidad médica" /></div>
+<div class="form-group"><label class="form-label">Fecha</label><input type="date" class="form-input" id="hist-fecha" /></div>
+<div class="form-group"><label class="form-label">Médico responsable</label><input type="text" class="form-input" id="hist-medico" placeholder="Dr./Dra. ..." /></div>
+<div class="form-group"><label class="form-label">Observaciones</label><textarea class="form-input" id="hist-obs" rows="3" placeholder="Resultados, indicaciones..."></textarea></div>
+<div class="form-group"><label class="form-label">Archivo (PDF o imagen)</label><input type="file" id="hist-file" class="form-input" accept=".pdf,image/*" onchange="previewFile(this)" style="padding:8px" /></div>
+<div id="hist-preview" style="display:none;margin-top:8px;padding:10px;background:var(--bg);border-radius:var(--radius-sm);font-size:13px;color:var(--text3)"></div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-ghost" onclick="closeModal('modal-historial')">Cancelar</button>
+<button class="btn btn-primary" onclick="saveHistorial()"><i class="fas fa-save"></i>Guardar</button>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="modal-bienestar">
+<div class="modal">
+<div class="modal-header"><div class="modal-title">¿Cómo te sentís hoy?</div><div class="modal-close" onclick="closeModal('modal-bienestar')"><i class="fas fa-times"></i></div></div>
+<div class="modal-body">
+<div class="form-group">
+<label class="form-label">Estado de ánimo</label>
+<div class="emoji-selector" id="emoji-animo">
+<div class="emoji-btn" data-val="😢" onclick="selectEmoji('animo','😢')">😢</div>
+<div class="emoji-btn" data-val="😕" onclick="selectEmoji('animo','😕')">😕</div>
+<div class="emoji-btn" data-val="😐" onclick="selectEmoji('animo','😐')">😐</div>
+<div class="emoji-btn" data-val="😊" onclick="selectEmoji('animo','😊')">😊</div>
+<div class="emoji-btn" data-val="😄" onclick="selectEmoji('animo','😄')">😄</div>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label">Nivel de estrés: <span id="val-estres">5</span>/10</label>
+<input type="range" class="wellness-slider" id="sl-estres" min="1" max="10" value="5" oninput="document.getElementById('val-estres').textContent=this.value" />
+</div>
+<div class="form-group">
+<label class="form-label">Calidad del sueño: <span id="val-sueno">5</span>/10</label>
+<input type="range" class="wellness-slider" id="sl-sueno" min="1" max="10" value="5" oninput="document.getElementById('val-sueno').textContent=this.value" />
+</div>
+<div class="form-group">
+<label class="form-label">Nivel de energía: <span id="val-energia">5</span>/10</label>
+<input type="range" class="wellness-slider" id="sl-energia" min="1" max="10" value="5" oninput="document.getElementById('val-energia').textContent=this.value" />
+</div>
+<div class="form-group">
+<label class="form-label">Ansiedad: <span id="val-ansiedad">5</span>/10</label>
+<input type="range" class="wellness-slider" id="sl-ansiedad" min="1" max="10" value="5" oninput="document.getElementById('val-ansiedad').textContent=this.value" />
+</div>
+<div class="form-group">
+<label class="form-label">Notas del día</label>
+<textarea class="form-input" id="bienestar-notas" rows="3" placeholder="¿Algo que quieras recordar de hoy?"></textarea>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-ghost" onclick="closeModal('modal-bienestar')">Cancelar</button>
+<button class="btn btn-primary" onclick="saveBienestar()"><i class="fas fa-heart"></i>Registrar</button>
+</div>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="modal-vitales">
+<div class="modal">
+<div class="modal-header"><div class="modal-title">Registrar Signos Vitales</div><div class="modal-close" onclick="closeModal('modal-vitales')"><i class="fas fa-times"></i></div></div>
+<div class="modal-body">
+<div class="grid grid-2">
+<div class="form-group"><label class="form-label">Peso (kg)</label><input type="number" step="0.1" class="form-input" id="v-peso" placeholder="70.5" /></div>
+<div class="form-group"><label class="form-label">Altura (cm)</label><input type="number" class="form-input" id="v-altura" placeholder="175" /></div>
+</div>
+<div class="grid grid-2">
+<div class="form-group"><label class="form-label">Presión Sistólica</label><input type="number" class="form-input" id="v-sist" placeholder="120" /></div>
+<div class="form-group"><label class="form-label">Presión Diastólica</label><input type="number" class="form-input" id="v-diast" placeholder="80" /></div>
+</div>
+<div class="form-group"><label class="form-label">Glucosa (mg/dL)</label><input type="number" class="form-input" id="v-glucosa" placeholder="95" /></div>
+<div class="form-group"><label class="form-label">Fecha</label><input type="date" class="form-input" id="v-fecha" /></div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-ghost" onclick="closeModal('modal-vitales')">Cancelar</button>
+<button class="btn btn-primary" onclick="saveVitales()"><i class="fas fa-save"></i>Guardar Registro</button>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="modal-confirm">
+<div class="modal" style="max-width:380px">
+<div class="modal-header"><div class="modal-title">Confirmar acción</div><div class="modal-close" onclick="closeModal('modal-confirm')"><i class="fas fa-times"></i></div></div>
+<div class="modal-body"><p id="confirm-text">¿Estás seguro?</p></div>
+<div class="modal-footer">
+<button class="btn btn-ghost" onclick="closeModal('modal-confirm')">Cancelar</button>
+<button class="btn btn-danger" id="confirm-btn">Confirmar</button>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="modal-tutorial">
+<div class="modal" style="max-width:450px; text-align:center">
+<div class="modal-body" style="padding:40px 30px">
+    <div id="tut-icon" style="font-size:60px;margin-bottom:20px">👋</div>
+    <h2 id="tut-title" style="font-size:24px;font-weight:800;margin-bottom:12px">¡Bienvenido a Chequeate!</h2>
+    <p id="tut-text" style="font-size:15px;color:var(--text2);line-height:1.6;margin-bottom:30px">Tu nueva plataforma integral para gestionar tu salud. Vamos a darte un breve recorrido.</p>
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:30px" id="tut-dots">
+        <div class="tut-dot active"></div>
+        <div class="tut-dot"></div>
+        <div class="tut-dot"></div>
+        <div class="tut-dot"></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="nextTutorialStep()" id="tut-btn">Empezar Recorrido</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="modal-vacuna">
+<div class="modal">
+<div class="modal-header"><div class="modal-title">Registrar Vacuna</div><div class="modal-close" onclick="closeModal('modal-vacuna')"><i class="fas fa-times"></i></div></div>
+<div class="modal-body">
+    <div class="form-group"><label class="form-label">Nombre de la Vacuna</label><input type="text" class="form-input" id="v-vac-nombre" placeholder="Ej: Antitetánica, COVID-19..." /></div>
+    <div class="form-group"><label class="form-label">Dosis / Refuerzo</label><input type="text" class="form-input" id="v-vac-dosis" placeholder="Ej: 1ra Dosis, Refuerzo Anual..." /></div>
+    <div class="form-group"><label class="form-label">Fecha de Aplicación</label><input type="date" class="form-input" id="v-vac-fecha" /></div>
+    <div class="form-group"><label class="form-label">Lugar / Centro</label><input type="text" class="form-input" id="v-vac-lugar" /></div>
+</div>
+<div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-vacuna')">Cancelar</button><button class="btn btn-primary" onclick="saveVacuna()">Guardar</button></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="modal-lab">
+<div class="modal">
+<div class="modal-header"><div class="modal-title">Subir Informe de Laboratorio</div><div class="modal-close" onclick="closeModal('modal-lab')"><i class="fas fa-times"></i></div></div>
+<div class="modal-body">
+    <div class="form-group"><label class="form-label">Título del Informe</label><input type="text" class="form-input" id="l-estudio" placeholder="Ej: Análisis de Sangre Completo" /></div>
+    <div class="form-group"><label class="form-label">Fecha del Estudio</label><input type="date" class="form-input" id="l-fecha" /></div>
+    
+    <div class="card" style="background:var(--primary-light);border:2px dashed var(--primary);text-align:center;padding:30px;margin-bottom:20px;cursor:pointer" onclick="document.getElementById('lab-scan').click()">
+        <i class="fas fa-file-pdf" style="font-size:40px;color:var(--primary);margin-bottom:12px"></i>
+        <div style="font-weight:800;color:var(--primary)">SUBIR PDF O FOTO</div>
+        <div style="font-size:12px;color:var(--primary);opacity:0.8">La IA analizará el contenido al instante</div>
+        <input type="file" id="lab-scan" hidden accept="image/*,.pdf" onchange="processOCR(this, 'lab')" />
+    </div>
+
+    <div id="ocr-loading" style="display:none;text-align:center;margin-bottom:16px">
+        <div class="spinner"></div>
+        <div style="font-size:12px;color:var(--primary);margin-top:8px">Procesando archivo...</div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal('modal-lab')">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveLab()">Confirmar y Guardar</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="modal-med">
+<div class="modal">
+<div class="modal-header"><div class="modal-title">Agregar Medicación</div><div class="modal-close" onclick="closeModal('modal-med')"><i class="fas fa-times"></i></div></div>
+<div class="modal-body">
+    <div class="form-group"><label class="form-label">Nombre del Medicamento</label><input type="text" class="form-input" id="m-nombre" placeholder="Ej: Enalapril, Metformina..." /></div>
+    <div class="form-group"><label class="form-label">Dosis / Horarios</label><input type="text" class="form-input" id="m-dosis" placeholder="Ej: 5mg cada 12hs, 1 comprimido diario..." /></div>
+    <div class="form-group"><label class="form-label">Para qué sirve (Opcional)</label><input type="text" class="form-input" id="m-uso" placeholder="Ej: Presión, Diabetes..." /></div>
+</div>
+<div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-med')">Cancelar</button><button class="btn btn-primary" onclick="saveMed()">Guardar</button></div>
+</div>
+</div>
+<script>
+// ============================================================
+// STATE & STORAGE
+// ============================================================
+const APP_KEY = 'chequeate_v1';
+let state = {
+  user: { name: 'Usuario', age: '', avatar: '' },
+  profile: {
+    nombre:'', nacimiento:'', genero:'', email:'', telefono:'',
+    sangre:'', obra:'', emergencia:'', antecedentes:'',
+    preexistentes:'', alergias:'', medicacion:'', photo:''
+  },
+  patientId: '',
+  especialidades: [],
+  turnos: [],
+  historial: [],
+  bienestar: [],
+  portalObs: [],
+  testResults: null,
+  vitales: [],
+  vacunas: [],
+  laboratorio: [],
+  medicacion: [],
+  sintomas: [],
+  darkMode: false,
+  onboarded: false,
+  tutorialDone: false
+};
+
+let habitsToday = { agua: false, meditar: false, pantallas: false, lectura: false };
+
+function loadState() {
+  const saved = localStorage.getItem(APP_KEY);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      state = { ...state, ...parsed };
+      // Deep merge profile
+      if (parsed.profile) state.profile = { ...state.profile, ...parsed.profile };
+    } catch(e) {}
+  }
+}
+
+function saveState() {
+  localStorage.setItem(APP_KEY, JSON.stringify(state));
+}
+
+// ============================================================
+// TOAST NOTIFICATIONS
+// ============================================================
+function toast(msg, type = 'info') {
+  const icons = { success: 'fas fa-check-circle', error: 'fas fa-times-circle', warning: 'fas fa-exclamation-triangle', info: 'fas fa-info-circle' };
+  const colors = { success: 'var(--green)', error: 'var(--red)', warning: 'var(--yellow)', info: 'var(--primary)' };
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<i class="${icons[type]}" style="color:${colors[type]}"></i><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(100%)'; t.style.transition = '0.3s ease'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// ============================================================
+// ASISTENTE IA (OCR & VOZ)
+// ============================================================
+async function processOCR(input, type) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const loading = document.getElementById('ocr-loading');
+    if (loading) loading.style.display = 'block';
+    
+    // Guardar el archivo para adjuntarlo al guardar el formulario
+    window.lastScannedFile = file;
+    
+    try {
+        if (file.type === 'application/pdf') {
+            // Solo verificamos que el PDF sea legible
+            const arrayBuffer = await file.arrayBuffer();
+            const pdfjsLib = window['pdfjs-dist/build/pdf'];
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        }
+        toast('Archivo listo para guardar', 'success');
+    } catch (e) {
+        console.error(e);
+        toast('Archivo cargado correctamente', 'info');
+    } finally {
+        if (loading) loading.style.display = 'none';
+    }
+}
+
+async function convertPdfToImage(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 2 }); // Escala 2 para mejor resolución OCR
+    
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+    
+    await page.render({ canvasContext: context, viewport: viewport }).promise;
+    return canvas.toDataURL('image/png');
+}
+
+function interpretLabOCR(text) {
+    const t = text.toLowerCase();
+    let findings = [];
+    let advice = "";
+
+    if (t.includes('glucosa') || t.includes('glucemia')) {
+        findings.push("Nivel de Glucosa");
+        if (t.match(/1[1-9]\d/)) advice += "• Se detectó un valor de glucosa posiblemente elevado. Consultá con un endocrinólogo.\n";
+    }
+    if (t.includes('colesterol')) {
+        findings.push("Perfil Lipídico (Colesterol)");
+        if (t.includes('alto') || t.match(/2[1-9]\d/)) advice += "• El colesterol parece estar por encima del rango óptimo. Revisá tu dieta.\n";
+    }
+    if (t.includes('hemoglobina') || t.includes('hierro')) {
+        findings.push("Hemograma (Hierro/Glóbulos)");
+        if (t.includes('bajo')) advice += "• Posibles signos de anemia detectados. Consultá por suplementos de hierro.\n";
+    }
+
+    // Título automático
+    if (findings.length > 0) {
+        document.getElementById('l-estudio').value = "Análisis de " + findings.join(", ");
+    }
+
+    return advice || "La IA no detectó anomalías críticas inmediatas, pero recordá siempre validar con tu médico.";
+}
+
+function speak(msg) {
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(msg);
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    }
+}
+
+// ============================================================
+// MODALS
+// ============================================================
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+function confirmAction(text, callback) {
+  document.getElementById('confirm-text').textContent = text;
+  document.getElementById('confirm-btn').onclick = () => { callback(); closeModal('modal-confirm'); };
+  openModal('modal-confirm');
+}
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', function(e) { if (e.target === this) closeModal(this.id); });
+});
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+let currentSection = 'dashboard';
+function navigate(section) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.bottom-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('s-' + section).classList.add('active');
+  const ni = document.getElementById('nav-' + section);
+  const bi = document.getElementById('bnav-' + section);
+  if (ni) ni.classList.add('active');
+  if (bi) bi.classList.add('active');
+  currentSection = section;
+  closeSidebar();
+  if (section === 'dashboard') renderDashboard();
+  if (section === 'especialidades') renderEspecialidades();
+  if (section === 'calendario') renderCalendar();
+  if (section === 'historial') renderHistorial();
+  if (section === 'bienestar') renderBienestar();
+  if (section === 'portal') enterMedicalView();
+  if (section === 'config') renderConfig();
+  if (section === 'perfil') renderPerfil();
+  if (section === 'test') renderTest();
+  if (section === 'vitales') renderVitales();
+  if (section === 'vacunas') renderVacunas();
+  if (section === 'laboratorio') renderLaboratorio();
+  if (section === 'medicacion') renderMedicacion();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('active');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('active');
+}
+
+// ============================================================
+// ONBOARDING
+// ============================================================
+let obStep = 0;
+const obSteps = ['ob-1', 'ob-2', 'ob-3'];
+
+function obNext() {
+  console.log('obNext called, current step:', obStep);
+  if (obStep === 1) {
+    const input = document.getElementById('ob-name');
+    const name = input ? input.value.trim() : '';
+    if (name) { state.user.name = name; saveState(); }
+  }
+  if (obStep === 2) {
+    finishOnboarding(); return;
+  }
+  obStep++;
+  updateObUI();
+}
+
+function obBack() {
+  if (obStep === 0) return;
+  obStep--;
+  updateObUI();
+}
+
+function updateObUI() {
+  obSteps.forEach((s, i) => {
+    const el = document.getElementById(s);
+    const dot = document.getElementById('dot-' + i);
+    if (el) el.classList.toggle('active', i === obStep);
+    if (dot) dot.classList.toggle('active', i === obStep);
+  });
+  const btnBack = document.getElementById('ob-back');
+  const btnNext = document.getElementById('ob-next');
+  if (btnBack) btnBack.style.display = obStep > 0 ? 'inline-flex' : 'none';
+  if (btnNext) btnNext.textContent = obStep === 2 ? '¡Empezar!' : (obStep === 0 ? 'Comenzar' : 'Siguiente');
+}
+
+function finishOnboarding() {
+  state.onboarded = true;
+  saveState();
+  document.getElementById('onboarding').style.animation = 'fadeOut 0.5s ease forwards';
+  setTimeout(() => { document.getElementById('onboarding').style.display = 'none'; }, 500);
+  initApp();
+}
+
+// Add fadeOut animation
+const style = document.createElement('style');
+style.textContent = '@keyframes fadeOut{to{opacity:0;transform:scale(1.05)}}';
+document.head.appendChild(style);
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+let dashChart = null;
+function renderDashboard() {
+  const today = new Date();
+  const hour = today.getHours();
+  const greet = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches';
+  document.getElementById('dash-greeting').textContent = `${greet}, ${state.user.name} 👋`;
+
+  const realized = state.especialidades.filter(e => e.estado === 'realizada').length;
+  const proxTurnos = state.turnos.filter(t => !t.completado && new Date(t.fecha) >= today).slice(0, 5);
+  const pendientes = state.especialidades.filter(e => e.estado === 'pendiente').length;
+  const urgentes = state.especialidades.filter(e => e.estado === 'urgente').length;
+
+  document.getElementById('dash-realizados').textContent = realized;
+  document.getElementById('dash-proximos').textContent = proxTurnos.length;
+  document.getElementById('dash-pendientes').textContent = pendientes;
+  document.getElementById('dash-urgentes').textContent = urgentes;
+
+  const total = state.especialidades.length || 1;
+  const scoreEsp = Math.round((realized / total) * 60);
+  const scoreBien = state.bienestar.length > 0 ? Math.round((state.bienestar.slice(-7).reduce((a, b) => a + ((b.energia || 5) + (b.sueno || 5)) / 2, 0) / Math.min(state.bienestar.length, 7)) * 4) : 0;
+  const score = Math.min(100, scoreEsp + scoreBien + (state.historial.length > 0 ? 10 : 0));
+
+  document.getElementById('dash-score').textContent = score;
+  const pct = Math.round((realized / total) * 100);
+  document.getElementById('prog-chequeos').style.width = pct + '%';
+  document.getElementById('prog-chequeos-val').textContent = pct + '%';
+  const bPct = Math.min(100, state.bienestar.length * 10);
+  document.getElementById('prog-bienestar').style.width = bPct + '%';
+  document.getElementById('prog-bienestar-val').textContent = bPct + '%';
+
+  const ring = document.getElementById('score-ring-fill');
+  const circumference = 2 * Math.PI * 42;
+  ring.style.strokeDashoffset = circumference - (score / 100) * circumference;
+  const badge = document.getElementById('dash-score-badge');
+  if (score >= 70) { badge.textContent = 'Excelente'; badge.className = 'badge badge-green'; }
+  else if (score >= 40) { badge.textContent = 'Bueno'; badge.className = 'badge badge-blue'; }
+  else { badge.textContent = 'Mejorable'; badge.className = 'badge badge-yellow'; }
+
+  // Proximos list
+  const pl = document.getElementById('dash-proximos-list');
+  if (proxTurnos.length === 0) {
+    pl.innerHTML = '<div class="empty-state" style="padding:20px"><i class="fas fa-calendar" style="font-size:30px"></i><p>No hay turnos próximos</p></div>';
+  } else {
+    pl.innerHTML = proxTurnos.map(t => `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:8px">
+        <div style="width:40px;height:40px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:16px;flex-shrink:0"><i class="fas fa-calendar-check"></i></div>
+        <div style="flex:1"><div style="font-weight:600;font-size:13px">${t.especialidad}</div><div style="font-size:11px;color:var(--text3)">${formatDate(t.fecha)} ${t.hora ? '· ' + t.hora : ''}</div></div>
+        <span class="badge badge-blue">Próximo</span>
+      </div>`).join('');
+  }
+
+  // Widgets
+  const analisis = state.historial.find(h => h.tipo === 'laboratorio');
+  document.getElementById('widget-analisis').textContent = analisis ? formatDate(analisis.fecha) : 'Sin registrar';
+  const cardio = state.historial.find(h => h.especialidad && h.especialidad.toLowerCase().includes('cardio'));
+  document.getElementById('widget-cardio').textContent = cardio ? formatDate(cardio.fecha) : 'Sin registrar';
+  const lastBien = state.bienestar[state.bienestar.length - 1];
+  document.getElementById('widget-bienestar').textContent = lastBien ? `Energía ${lastBien.energia}/10` : 'Sin datos';
+
+  // AI Insights
+  const insights = generateInsights();
+  document.getElementById('ai-insights').innerHTML = insights.map(i => `<div class="insight-card ${i.type}">${i.icon} ${i.text}</div>`).join('') || '<div class="insight-card positive">✅ Todo parece estar en orden. ¡Seguí así!</div>';
+
+  // Sidebar user
+  document.getElementById('sidebar-name').textContent = state.user.name;
+  const av = document.getElementById('sidebar-avatar');
+  if (state.user.avatar) { av.innerHTML = `<img src="${state.user.avatar}" alt="Avatar">`; }
+  else { av.textContent = (state.user.name || 'U')[0].toUpperCase(); }
+
+  renderDashChart();
+}
+
+function generateInsights() {
+  const ins = [];
+  if (state.especialidades.filter(e => e.estado === 'urgente').length > 0)
+    ins.push({ type: 'warning', icon: '⚠️', text: 'Tenés especialidades marcadas como urgentes. ¡No las postergues!' });
+  if (state.bienestar.length >= 3) {
+    const last3 = state.bienestar.slice(-3);
+    const avgEstres = last3.reduce((a, b) => a + (b.estres || 5), 0) / 3;
+    if (avgEstres >= 7) ins.push({ type: 'warning', icon: '🧠', text: 'Registraste estrés elevado varios días seguidos. Considerá hablar con un profesional.' });
+    const avgSueno = last3.reduce((a, b) => a + (b.sueno || 5), 0) / 3;
+    if (avgSueno < 4) ins.push({ type: 'warning', icon: '😴', text: 'Tu calidad de sueño bajó esta semana. El descanso es fundamental para tu salud.' });
+    if (avgEstres < 4 && avgSueno >= 7) ins.push({ type: 'positive', icon: '🌟', text: '¡Tu bienestar emocional está muy bien! Seguí con tus hábitos saludables.' });
+  }
+  if (state.turnos.length === 0 && state.especialidades.length > 0)
+    ins.push({ type: '', icon: '📅', text: 'Tenés especialidades sin turno asignado. ¿Querés agendarlas?' });
+  if (state.historial.length === 0)
+    ins.push({ type: '', icon: '📁', text: 'Aún no registraste estudios. Podés subir tus análisis y consultas en Historial Médico.' });
+  return ins;
+}
+
+function renderDashChart() {
+  const ctx = document.getElementById('chart-dashboard');
+  if (!ctx) return;
+  if (dashChart) dashChart.destroy();
+  const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const now = new Date();
+  const labels = [];
+  const data = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    labels.push(months[d.getMonth()]);
+    const count = state.historial.filter(h => {
+      const hd = new Date(h.fecha);
+      return hd.getFullYear() === d.getFullYear() && hd.getMonth() === d.getMonth();
+    }).length;
+    data.push(count);
+  }
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  dashChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Estudios registrados',
+        data,
+        backgroundColor: 'rgba(37,99,235,0.7)',
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1, color: isDark ? '#a0aec0' : '#8a9ab5' }, grid: { color: isDark ? '#2d3748' : '#e2e8f0' } },
+        x: { ticks: { color: isDark ? '#a0aec0' : '#8a9ab5' }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+function generateQR() {
+  const container = document.getElementById('qr-canvas');
+  if (!container) return;
+  container.innerHTML = '';
+  const id = state.patientId || generatePatientId();
+  const baseUrl = window.location.href.split('#')[0];
+  const viewUrl = baseUrl + '#emergencia';
+  try {
+    if (typeof QRCode !== 'undefined') {
+      new QRCode(container, { text: viewUrl, width: 140, height: 140, colorDark: '#1d4ed8', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+    } else { throw new Error('Lib not loaded'); }
+  } catch(e) { 
+    container.innerHTML = `<div style="width:140px;height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg3);border-radius:12px;font-size:10px;color:var(--text3);text-align:center;padding:10px"><i class="fas fa-qrcode" style="font-size:40px;color:var(--primary);margin-bottom:8px"></i>${id}</div>`; 
+  }
+}
+
+// ============================================================
+// ESPECIALIDADES
+// ============================================================
+const ESP_DEFAULTS = [
+  { id: uid(), nombre: 'Clínica Médica', desc: 'Control general de salud y prevención', frecuencia: 'Anual', estado: 'pendiente', icon: '🩺', color: '#2563eb', ultimo: '', medico: '' },
+  { id: uid(), nombre: 'Cardiología', desc: 'Salud cardiovascular y presión arterial', frecuencia: 'Anual', estado: 'pendiente', icon: '❤️', color: '#ef4444', ultimo: '', medico: '' },
+  { id: uid(), nombre: 'Oftalmología', desc: 'Examen visual y salud ocular', frecuencia: 'Anual', estado: 'pendiente', icon: '👁️', color: '#0ea5e9', ultimo: '', medico: '' },
+  { id: uid(), nombre: 'Odontología', desc: 'Limpieza y revisión dental', frecuencia: 'Semestral', estado: 'pendiente', icon: '🦷', color: '#10b981', ultimo: '', medico: '' },
+  { id: uid(), nombre: 'Dermatología', desc: 'Control de piel y manchas', frecuencia: 'Anual', estado: 'pendiente', icon: '🔬', color: '#f59e0b', ultimo: '', medico: '' },
+  { id: uid(), nombre: 'Análisis de sangre', desc: 'Hemograma y perfil lipídico', frecuencia: 'Anual', estado: 'pendiente', icon: '🧪', color: '#8b5cf6', ultimo: '', medico: '' },
+  { id: uid(), nombre: 'Ginecología', desc: 'Salud reproductiva femenina', frecuencia: 'Anual', estado: 'pendiente', icon: '🌸', color: '#ec4899', ultimo: '', medico: '' },
+  { id: uid(), nombre: 'Nutrición', desc: 'Evaluación nutricional y hábitos', frecuencia: 'Anual', estado: 'pendiente', icon: '🥗', color: '#059669', ultimo: '', medico: '' },
+  { id: uid(), nombre: 'Endocrinología', desc: 'Control hormonal y tiroides', frecuencia: 'Anual', estado: 'pendiente', icon: '⚗️', color: '#7c3aed', ultimo: '', medico: '' }
+];
+
+let espFilter = 'todas';
+function filterEsp(f, el) {
+  espFilter = f;
+  document.querySelectorAll('#s-especialidades .filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderEspecialidades();
+}
+
+function renderEspecialidades() {
+  let list = state.especialidades;
+  if (espFilter !== 'todas') list = list.filter(e => e.estado === espFilter);
+  const grid = document.getElementById('esp-grid');
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-stethoscope"></i><h3>Sin especialidades</h3><p>Agregá tus controles médicos para hacer seguimiento</p></div>';
+    return;
+  }
+  grid.innerHTML = list.map(e => `
+    <div class="spec-card ${e.estado}" id="esp-${e.id}">
+      <div style="position:absolute;top:14px;right:14px;display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="editEsp('${e.id}')" title="Editar"><i class="fas fa-pen"></i></button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteEsp('${e.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+      </div>
+      <div class="spec-icon" style="background:${e.color}22;font-size:26px">${e.icon || '🩺'}</div>
+      <div class="spec-name">${e.nombre}</div>
+      <div class="spec-desc">${e.desc}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+        <span class="badge ${e.estado === 'realizada' ? 'badge-green' : e.estado === 'urgente' ? 'badge-red' : 'badge-yellow'}">${e.estado}</span>
+        <span class="badge badge-blue">${e.frecuencia}</span>
+      </div>
+      ${e.ultimo ? `<div style="font-size:11px;color:var(--text3);margin-bottom:8px"><i class="fas fa-clock" style="margin-right:4px"></i>Último control: ${formatDate(e.ultimo)}</div>` : ''}
+      ${e.medico ? `<div style="font-size:11px;color:var(--text3);margin-bottom:8px"><i class="fas fa-user-md" style="margin-right:4px"></i>${e.medico}</div>` : ''}
+      <div class="spec-actions">
+        <button class="btn btn-ghost btn-sm" onclick="toggleEspDone('${e.id}')"><i class="fas fa-${e.estado === 'realizada' ? 'times' : 'check'}"></i>${e.estado === 'realizada' ? 'Pendiente' : 'Realizada'}</button>
+        <button class="btn btn-primary btn-sm" onclick="agendar('${e.nombre}')"><i class="fas fa-calendar-plus"></i>Agendar</button>
+      </div>
+    </div>`).join('');
+}
+
+function openAddEsp() { openModal('modal-especialidad'); }
+
+let editingEspId = null;
+function editEsp(id) {
+  const e = state.especialidades.find(x => x.id === id);
+  if (!e) return;
+  editingEspId = id;
+  document.getElementById('esp-nombre').value = e.nombre;
+  document.getElementById('esp-desc').value = e.desc;
+  document.getElementById('esp-frecuencia').value = e.frecuencia;
+  document.getElementById('esp-estado').value = e.estado;
+  document.getElementById('esp-ultimo').value = e.ultimo || '';
+  document.getElementById('esp-medico').value = e.medico || '';
+  openModal('modal-especialidad');
+}
+
+function saveEspecialidad() {
+  const nombre = document.getElementById('esp-nombre').value.trim();
+  if (!nombre) { toast('El nombre es requerido', 'error'); return; }
+  const data = {
+    nombre,
+    desc: document.getElementById('esp-desc').value,
+    frecuencia: document.getElementById('esp-frecuencia').value,
+    estado: document.getElementById('esp-estado').value,
+    ultimo: document.getElementById('esp-ultimo').value,
+    medico: document.getElementById('esp-medico').value,
+    icon: getEspIcon(nombre),
+    color: getEspColor(nombre)
+  };
+  if (editingEspId) {
+    const idx = state.especialidades.findIndex(e => e.id === editingEspId);
+    state.especialidades[idx] = { ...state.especialidades[idx], ...data };
+    editingEspId = null;
+    toast('Especialidad actualizada', 'success');
+  } else {
+    state.especialidades.push({ id: uid(), ...data });
+    toast('Especialidad agregada', 'success');
+  }
+  saveState();
+  closeModal('modal-especialidad');
+  resetEspForm();
+  renderEspecialidades();
+}
+
+function resetEspForm() {
+  ['esp-nombre','esp-desc','esp-ultimo','esp-medico'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('esp-estado').value = 'pendiente';
+  editingEspId = null;
+}
+
+function deleteEsp(id) {
+  confirmAction('¿Eliminar esta especialidad?', () => {
+    state.especialidades = state.especialidades.filter(e => e.id !== id);
+    saveState();
+    renderEspecialidades();
+    toast('Especialidad eliminada', 'success');
+  });
+}
+
+function toggleEspDone(id) {
+  const e = state.especialidades.find(x => x.id === id);
+  if (!e) return;
+  e.estado = e.estado === 'realizada' ? 'pendiente' : 'realizada';
+  if (e.estado === 'realizada') e.ultimo = new Date().toISOString().split('T')[0];
+  saveState();
+  renderEspecialidades();
+  toast(e.estado === 'realizada' ? '¡Marcada como realizada!' : 'Marcada como pendiente', 'success');
+}
+
+function agendar(esp) {
+  document.getElementById('turno-esp').value = esp;
+  openModal('modal-turno');
+}
+
+function getEspIcon(nombre) {
+  const map = { 'cardio': '❤️', 'ofta': '👁️', 'dent': '🦷', 'derm': '🔬', 'sangre': '🧪', 'gine': '🌸', 'nutri': '🥗', 'endoc': '⚗️', 'uro': '🏥', 'neuro': '🧠', 'trauma': '🦴', 'psico': '🧘' };
+  const low = nombre.toLowerCase();
+  for (const [k, v] of Object.entries(map)) { if (low.includes(k)) return v; }
+  return '🩺';
+}
+
+function getEspColor(nombre) {
+  const map = { 'cardio': '#ef4444', 'ofta': '#0ea5e9', 'dent': '#10b981', 'derm': '#f59e0b', 'sangre': '#8b5cf6', 'gine': '#ec4899', 'nutri': '#059669', 'endoc': '#7c3aed' };
+  const low = nombre.toLowerCase();
+  for (const [k, v] of Object.entries(map)) { if (low.includes(k)) return v; }
+  return '#2563eb';
+}
+
+// ============================================================
+// CALENDARIO
+// ============================================================
+let calDate = new Date();
+let selectedCalDate = null;
+
+function renderCalendar() {
+  const year = calDate.getFullYear();
+  const month = calDate.getMonth();
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-month-title').textContent = `${months[month]} ${year}`;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+
+  const grid = document.getElementById('cal-grid');
+  let html = '';
+  for (let i = 0; i < firstDay; i++) {
+    const prevDay = new Date(year, month, -firstDay + i + 1).getDate();
+    html += `<div class="cal-day other-month">${prevDay}</div>`;
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const hasEvent = state.turnos.some(t => t.fecha === dateStr);
+    const isSelected = selectedCalDate === dateStr;
+    html += `<div class="cal-day ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''} ${isSelected ? 'selected' : ''}" onclick="selectCalDay('${dateStr}',${d})">${d}</div>`;
+  }
+  grid.innerHTML = html;
+  renderCalEvents();
+}
+
+function selectCalDay(dateStr, day) {
+  selectedCalDate = dateStr;
+  renderCalendar();
+  document.getElementById('cal-selected-date').textContent = `Turnos del ${formatDate(dateStr)}`;
+  renderCalEvents();
+}
+
+function renderCalEvents() {
+  const list = document.getElementById('cal-events-list');
+  let turnos = selectedCalDate
+    ? state.turnos.filter(t => t.fecha === selectedCalDate)
+    : state.turnos.filter(t => { const d = new Date(t.fecha); return d.getMonth() === calDate.getMonth() && d.getFullYear() === calDate.getFullYear(); });
+
+  if (turnos.length === 0) {
+    list.innerHTML = '<div class="empty-state" style="padding:20px"><i class="fas fa-calendar-times" style="font-size:30px"></i><p>Sin turnos para este día</p></div>';
+    return;
+  }
+  list.innerHTML = turnos.map(t => `
+    <div style="padding:12px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:8px;border-left:3px solid ${t.completado ? 'var(--green)' : 'var(--primary)'}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:700;font-size:13px">${t.especialidad}</div>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm" onclick="toggleTurno('${t.id}')" title="${t.completado ? 'Desmarcar' : 'Completar'}"><i class="fas fa-${t.completado ? 'times' : 'check'}" style="color:${t.completado ? 'var(--red)' : 'var(--green)'}"></i></button>
+          <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteTurno('${t.id}')"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">${t.hora ? t.hora + ' · ' : ''}${t.medico || 'Médico no especificado'}</div>
+      ${t.lugar ? `<div style="font-size:11px;color:var(--text3)"><i class="fas fa-map-marker-alt" style="margin-right:4px"></i>${t.lugar}</div>` : ''}
+      ${t.notas ? `<div style="font-size:11px;color:var(--text2);margin-top:6px;padding:6px;background:var(--bg2);border-radius:6px">${t.notas}</div>` : ''}
+      ${t.completado ? '<span class="badge badge-green" style="margin-top:6px">Completado</span>' : ''}
+    </div>`).join('');
+}
+
+function calPrev() { calDate = new Date(calDate.getFullYear(), calDate.getMonth() - 1, 1); renderCalendar(); }
+function calNext() { calDate = new Date(calDate.getFullYear(), calDate.getMonth() + 1, 1); renderCalendar(); }
+
+let editingTurnoId = null;
+function saveTurno() {
+  const esp = document.getElementById('turno-esp').value;
+  const fecha = document.getElementById('turno-fecha').value;
+  if (!esp || !fecha) { toast('Especialidad y fecha son requeridos', 'error'); return; }
+
+  // Check conflicts
+  const hora = document.getElementById('turno-hora').value;
+  if (hora) {
+    const conflict = state.turnos.find(t => t.fecha === fecha && t.hora === hora && t.id !== editingTurnoId);
+    if (conflict) { toast('Ya tenés un turno a esa hora ese día', 'warning'); return; }
+  }
+
+  const data = { especialidad: esp, medico: document.getElementById('turno-medico').value, fecha, hora, lugar: document.getElementById('turno-lugar').value, notas: document.getElementById('turno-notas').value, completado: false };
+  if (editingTurnoId) {
+    const idx = state.turnos.findIndex(t => t.id === editingTurnoId);
+    state.turnos[idx] = { ...state.turnos[idx], ...data };
+    editingTurnoId = null;
+    toast('Turno actualizado', 'success');
+  } else {
+    state.turnos.push({ id: uid(), ...data });
+    toast('Turno agendado correctamente', 'success');
+  }
+  saveState();
+  closeModal('modal-turno');
+  resetTurnoForm();
+  if (currentSection === 'calendario') renderCalendar();
+  if (currentSection === 'dashboard') renderDashboard();
+}
+
+function resetTurnoForm() {
+  ['turno-esp','turno-medico','turno-fecha','turno-hora','turno-lugar','turno-notas'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  editingTurnoId = null;
+}
+
+function toggleTurno(id) {
+  const t = state.turnos.find(x => x.id === id);
+  if (t) { t.completado = !t.completado; saveState(); renderCalEvents(); }
+}
+
+function deleteTurno(id) {
+  confirmAction('¿Eliminar este turno?', () => {
+    state.turnos = state.turnos.filter(t => t.id !== id);
+    saveState();
+    renderCalEvents();
+    renderCalendar();
+    toast('Turno eliminado', 'success');
+  });
+}
+// ============================================================
+// HISTORIAL MEDICO
+// ============================================================
+let histFilter = 'todas';
+let histSearch = '';
+
+function filterHist(f, el) {
+  histFilter = f;
+  document.querySelectorAll('#s-historial .filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderHistorial();
+}
+
+function searchHistorial(val) { histSearch = val.toLowerCase(); renderHistorial(); }
+
+function renderHistorial() {
+  let list = [...state.historial].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  if (histFilter !== 'todas') list = list.filter(h => h.tipo === histFilter);
+  if (histSearch) list = list.filter(h => (h.nombre + h.especialidad + h.medico + h.obs).toLowerCase().includes(histSearch));
+
+  const tl = document.getElementById('historial-timeline');
+  if (list.length === 0) {
+    tl.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><h3>Sin estudios registrados</h3><p>Agregá tus análisis, consultas e imágenes médicas</p></div>';
+    return;
+  }
+  const typeIcon = { laboratorio: 'fas fa-flask', imagen: 'fas fa-x-ray', consulta: 'fas fa-user-md', otro: 'fas fa-file-medical' };
+  const typeColor = { laboratorio: 'var(--purple)', imagen: 'var(--primary)', consulta: 'var(--green)', otro: 'var(--yellow)' };
+  tl.innerHTML = `<div class="timeline">${list.map(h => `
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:${typeColor[h.tipo] || 'var(--primary)'}"></div>
+      <div class="timeline-date"><i class="${typeIcon[h.tipo] || 'fas fa-file'}" style="margin-right:4px;color:${typeColor[h.tipo]}"></i>${formatDate(h.fecha)}</div>
+      <div class="timeline-content">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:14px;margin-bottom:4px">${h.nombre}</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+              <span class="badge badge-blue">${h.especialidad || 'General'}</span>
+              <span class="badge" style="background:${typeColor[h.tipo]}22;color:${typeColor[h.tipo]}">${h.tipo}</span>
+            </div>
+            ${h.medico ? `<div style="font-size:12px;color:var(--text3)"><i class="fas fa-user-md" style="margin-right:4px"></i>${h.medico}</div>` : ''}
+            ${h.obs ? `<div style="font-size:12px;color:var(--text2);margin-top:6px;padding:8px;background:var(--bg2);border-radius:6px;line-height:1.5">${h.obs}</div>` : ''}
+            ${h.fileData ? `<div style="margin-top:8px"><a href="${h.fileData}" download="${h.fileName || 'archivo'}" class="btn btn-ghost btn-sm"><i class="fas fa-download"></i>${h.fileName || 'Descargar archivo'}</a></div>` : ''}
+          </div>
+          <button class="btn btn-ghost btn-sm" style="color:var(--red);margin-left:8px" onclick="deleteHistorial('${h.id}')"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function previewFile(input) {
+  const prev = document.getElementById('hist-preview');
+  if (input.files && input.files[0]) {
+    prev.style.display = 'block';
+    prev.innerHTML = `<i class="fas fa-file" style="margin-right:6px"></i>${input.files[0].name} (${(input.files[0].size / 1024).toFixed(1)} KB)`;
+  }
+}
+
+function saveHistorial() {
+  const nombre = document.getElementById('hist-nombre').value.trim();
+  const fecha = document.getElementById('hist-fecha').value;
+  if (!nombre || !fecha) { toast('Nombre y fecha son requeridos', 'error'); return; }
+  const fileInput = document.getElementById('hist-file');
+  const file = fileInput.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      pushHistorial({ nombre, tipo: document.getElementById('hist-tipo').value, especialidad: document.getElementById('hist-esp').value, fecha, medico: document.getElementById('hist-medico').value, obs: document.getElementById('hist-obs').value, fileData: e.target.result, fileName: file.name });
+    };
+    reader.readAsDataURL(file);
+  } else {
+    pushHistorial({ nombre, tipo: document.getElementById('hist-tipo').value, especialidad: document.getElementById('hist-esp').value, fecha, medico: document.getElementById('hist-medico').value, obs: document.getElementById('hist-obs').value });
+  }
+}
+
+function pushHistorial(data) {
+  state.historial.push({ id: uid(), ...data });
+  saveState();
+  closeModal('modal-historial');
+  resetHistForm();
+  renderHistorial();
+  toast('Estudio guardado exitosamente', 'success');
+}
+
+function resetHistForm() {
+  ['hist-nombre','hist-esp','hist-fecha','hist-medico','hist-obs'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('hist-tipo').value = 'laboratorio';
+  document.getElementById('hist-file').value = '';
+  document.getElementById('hist-preview').style.display = 'none';
+}
+
+function deleteHistorial(id) {
+  confirmAction('¿Eliminar este estudio del historial?', () => {
+    state.historial = state.historial.filter(h => h.id !== id);
+    saveState();
+    renderHistorial();
+    toast('Estudio eliminado', 'success');
+  });
+}
+
+// ============================================================
+// BIENESTAR EMOCIONAL
+// ============================================================
+let selectedAnimo = '';
+let bienestarChart = null;
+
+function toggleHabit(key) {
+    habitsToday[key] = !habitsToday[key];
+    const el = document.getElementById('hb-' + key);
+    const parent = el.parentElement;
+    if (habitsToday[key]) {
+        el.innerHTML = '<i class="fas fa-check-circle"></i>';
+        parent.classList.add('active');
+    } else {
+        el.innerHTML = '<i class="far fa-circle"></i>';
+        parent.classList.remove('active');
+    }
+}
+
+function selectEmoji(tipo, val) {
+  if (tipo === 'animo') {
+    selectedAnimo = val;
+    document.querySelectorAll('#emoji-animo .emoji-btn').forEach(b => {
+      b.classList.toggle('selected', b.dataset.val === val);
+    });
+  }
+}
+
+function saveBienestar() {
+  const animo = document.querySelector('.emoji-btn.selected')?.dataset.val || '😐';
+  const estres = parseInt(document.getElementById('sl-estres').value);
+  const sueno = parseInt(document.getElementById('sl-sueno').value);
+  const energia = parseInt(document.getElementById('sl-energia').value);
+  const ansiedad = parseInt(document.getElementById('sl-ansiedad').value);
+  const notas = document.getElementById('bienestar-notas').value;
+  
+  const entry = {
+    id: uid(),
+    fecha: new Date().toISOString(),
+    animo, estres, sueno, energia, ansiedad, notas,
+    habitos: {...habitsToday}
+  };
+  
+  state.bienestar.push(entry);
+  saveState();
+  closeModal('modal-bienestar');
+  toast('Bienestar registrado correctamente', 'success');
+  renderDashboard();
+  renderBienestar();
+}
+
+function resetBienestarForm() {
+  selectedAnimo = '';
+  ['sl-estres','sl-sueno','sl-energia','sl-ansiedad'].forEach(id => document.getElementById(id).value = 5);
+  ['val-estres','val-sueno','val-energia','val-ansiedad'].forEach(id => document.getElementById(id).textContent = '5');
+  document.getElementById('bienestar-notas').value = '';
+  document.querySelectorAll('#emoji-animo .emoji-btn').forEach(b => b.classList.remove('selected'));
+  habitsToday = { agua: false, meditar: false, pantallas: false, lectura: false };
+  document.querySelectorAll('.habit-check').forEach(el => el.innerHTML = '<i class="far fa-circle"></i>');
+}
+
+function renderBienestar() {
+  renderSintomas();
+  renderBienestarChart();
+  renderBienestarInsights();
+  renderTips();
+}
+
+function addSymptom() {
+    const text = document.getElementById('symptom-text').value.trim();
+    if (!text) return;
+    if (!state.sintomas) state.sintomas = [];
+    state.sintomas.unshift({
+        id: uid(),
+        fecha: new Date().toISOString(),
+        texto: text
+    });
+    document.getElementById('symptom-text').value = '';
+    saveState();
+    renderSintomas();
+    toast('Síntoma registrado', 'success');
+}
+
+function renderSintomas() {
+    const list = document.getElementById('symptom-history');
+    if (!list) return;
+    if (!state.sintomas) state.sintomas = [];
+    if (state.sintomas.length === 0) {
+        list.innerHTML = '<div style="color:var(--text3);text-align:center;padding:15px;background:var(--bg2);border-radius:10px">No hay síntomas registrados.</div>';
+        return;
+    }
+    list.innerHTML = state.sintomas.map(s => `
+        <div style="padding:10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--bg);border-radius:8px;margin-bottom:6px">
+            <div>
+                <div style="font-weight:700;font-size:12px;color:var(--text1)">${s.texto}</div>
+                <div style="font-size:11px;color:var(--text3)"><i class="far fa-clock" style="margin-right:4px"></i>${formatDate(s.fecha)}</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteSintoma('${s.id}')"><i class="fas fa-times"></i></button>
+        </div>
+    `).join('');
+}
+
+function deleteSintoma(id) {
+    state.sintomas = state.sintomas.filter(s => s.id !== id);
+    saveState();
+    renderSintomas();
+}
+
+function renderBienestarChart() {
+  const ctx = document.getElementById('chart-bienestar');
+  if (!ctx) return;
+  if (bienestarChart) bienestarChart.destroy();
+  const last7 = state.bienestar.slice(-7);
+  if (last7.length === 0) { bienestarChart = null; return; }
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  bienestarChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: last7.map(b => formatDate(b.fecha).slice(0, 5)),
+      datasets: [
+        { label: 'Energía', data: last7.map(b => b.energia), borderColor: '#2563eb', tension: 0.4, fill: false, pointRadius: 4 },
+        { label: 'Estrés', data: last7.map(b => b.estres), borderColor: '#ef4444', tension: 0.4, fill: false, pointRadius: 4 },
+        { label: 'Sueño', data: last7.map(b => b.sueno), borderColor: '#10b981', tension: 0.4, fill: false, pointRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: isDark ? '#a0aec0' : '#4a5568', boxWidth: 12, padding: 12 } } },
+      scales: {
+        y: { min: 1, max: 10, ticks: { color: isDark ? '#a0aec0' : '#8a9ab5' }, grid: { color: isDark ? '#2d3748' : '#e2e8f0' } },
+        x: { ticks: { color: isDark ? '#a0aec0' : '#8a9ab5' }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+function renderBienestarInsights() {
+  const container = document.getElementById('bienestar-insights');
+  if (state.bienestar.length < 3) {
+    container.innerHTML = '<div class="insight-card">Registrá al menos 3 días para ver tendencias personalizadas.</div>';
+    return;
+  }
+  const last7 = state.bienestar.slice(-7);
+  const avg = (key) => last7.reduce((a, b) => a + (b[key] || 5), 0) / last7.length;
+  const insights = [];
+  if (avg('estres') >= 7) insights.push({ type: 'warning', text: '⚠️ Registraste estrés elevado varios días seguidos. El estrés crónico puede afectar tu salud.' });
+  if (avg('sueno') < 5) insights.push({ type: 'warning', text: '😴 Tu calidad de sueño disminuyó esta semana. Se recomiendan 7-9 horas diarias.' });
+  if (avg('energia') >= 7) insights.push({ type: 'positive', text: '⚡ ¡Tu nivel de energía está muy bien esta semana! Continuá con tus hábitos.' });
+  if (avg('ansiedad') >= 7) insights.push({ type: 'warning', text: '🧘 Detectamos ansiedad elevada. Considerá técnicas de relajación o hablar con un profesional.' });
+  if (insights.length === 0) insights.push({ type: 'positive', text: '🌟 Tu bienestar emocional esta semana muestra un balance saludable. ¡Seguí así!' });
+  container.innerHTML = insights.map(i => `<div class="insight-card ${i.type}">${i.text}</div>`).join('');
+}
+
+const TIPS = [
+  '🚶 Realizá al menos 30 minutos de actividad física moderada al día.',
+  '💧 Bebé 8 vasos de agua diariamente. La hidratación mejora el rendimiento cognitivo.',
+  '🥦 Incluí verduras de diferentes colores en cada comida.',
+  '😴 El sueño reparador es fundamental: intentá dormir siempre a la misma hora.',
+  '🧘 5 minutos de meditación diaria reducen el cortisol y mejoran el foco.',
+  '🩺 Un chequeo médico anual puede detectar condiciones antes de que avancen.',
+  '🌳 Pasar tiempo en la naturaleza reduce el estrés y mejora el estado de ánimo.',
+  '📵 Desconectarte de pantallas 1 hora antes de dormir mejora la calidad del sueño.'
+];
+
+function renderTips() {
+  const tips = TIPS.sort(() => 0.5 - Math.random()).slice(0, 3);
+  document.getElementById('tips-container').innerHTML = tips.map(t => `<div class="insight-card positive" style="margin-bottom:8px">${t}</div>`).join('');
+}
+
+// BREATHING EXERCISE
+let breathInterval = null;
+let breathPhase = 0;
+function startBreathing() {
+  const circle = document.getElementById('breath-circle');
+  const text = document.getElementById('breath-text');
+  if (breathInterval) { clearInterval(breathInterval); breathInterval = null; circle.className = 'breathing-circle'; circle.textContent = 'Iniciar'; text.textContent = 'Presioná para comenzar'; return; }
+  const phases = [
+    { label: 'Inhalá...', class: 'breathing-in', duration: 4000 },
+    { label: 'Sostené...', class: '', duration: 2000 },
+    { label: 'Exhalá...', class: 'breathing-out', duration: 4000 },
+    { label: 'Descansá...', class: '', duration: 2000 }
+  ];
+  let idx = 0;
+  const next = () => {
+    const phase = phases[idx % phases.length];
+    circle.className = 'breathing-circle ' + phase.class;
+    circle.textContent = phase.label;
+    text.textContent = `Ciclo de respiración 4-2-4-2`;
+    idx++;
+  };
+  next();
+  breathInterval = setInterval(next, 4000);
+  toast('Ejercicio de respiración iniciado. Tocá nuevamente para detener.', 'info');
+}
+// ============================================================
+// PORTAL MEDICO
+// ============================================================
+function enterMedicalView() {
+    // Forzar recarga de datos desde memoria local
+    loadState();
+    
+    // Asegurar que las listas existan
+    if (!state.historial) state.historial = [];
+    if (!state.laboratorio) state.laboratorio = [];
+    if (!state.portalObs) state.portalObs = [];
+
+    const mainApp = document.getElementById('app-container') || document.querySelector('.app-wrapper') || document.getElementById('app');
+    if (mainApp) mainApp.style.display = 'none';
+    
+    const medView = document.getElementById('medical-interface');
+    medView.style.display = 'block';
+    
+    // Renderizar datos del paciente
+    const p = state.profile || {};
+    const u = state.user || {};
+    
+    document.getElementById('med-p-name').textContent = p.nombre || u.name || 'Paciente';
+    document.getElementById('med-p-alergias').textContent = p.alergias || 'SIN ALERGIAS';
+    document.getElementById('med-p-sangre').textContent = p.sangre || 'O+';
+    document.getElementById('med-p-obra').textContent = p.obra || 'No especificada';
+    document.getElementById('med-p-emergencia').textContent = p.emergencia || 'No registrado';
+    document.getElementById('med-p-medicacion').textContent = p.medicacion || 'Sin medicación crónica';
+
+    
+    let age = '-';
+    if (p.nacimiento) { 
+        const diff = Date.now() - new Date(p.nacimiento).getTime(); 
+        age = Math.floor(diff/31557600000) + ' años'; 
+    }
+    document.getElementById('med-p-edad').textContent = age;
+
+    // Unificar Historial y Laboratorio para el médico
+    const combined = [
+        ...state.historial.map(h => ({ ...h, title: h.nombre })),
+        ...state.laboratorio.map(l => ({ ...l, title: l.estudio, medico: 'Laboratorio' }))
+    ];
+    
+    // Ordenar por fecha (más reciente primero)
+    const allRecords = combined.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+    
+    const hist = document.getElementById('med-p-historial');
+    if (allRecords.length > 0) {
+        hist.innerHTML = allRecords.map(h => `
+            <div style="padding:12px; border-bottom:1px solid var(--border); font-size:13px">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px">
+                    <div style="flex:1">
+                        <div style="font-weight:800; color:var(--text)">${h.title}</div>
+                        <div style="font-size:11px; color:var(--text3); margin-top:2px">
+                            ${formatDate(h.fecha)} · ${h.medico || 'General'}
+                        </div>
+                        ${h.obs ? `<div style="font-size:12px; color:var(--text2); margin-top:6px; font-style:italic">"${h.obs}"</div>` : ''}
+                    </div>
+                    ${h.fileData ? `
+                        <button class="btn btn-ghost btn-sm" onclick="viewMedicalFile('${h.id}')" style="color:var(--primary); padding:6px 10px; border:1px solid var(--primary-light)">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                    ` : ''}
+
+                </div>
+            </div>
+        `).join('');
+    } else {
+        hist.innerHTML = '<div style="font-size:12px; color:var(--text3); text-align:center; padding:20px">No hay estudios registrados</div>';
+    }
+
+
+
+    renderMedObservations();
+}
+
+function exitMedicalView() {
+    window.location.hash = '';
+    location.reload();
+}
+
+function viewMedicalFile(id) {
+    // Buscar en ambas listas
+    const record = state.historial.find(h => h.id === id) || state.laboratorio.find(l => l.id === id);
+    
+    if (!record || !record.fileData) {
+        toast('Archivo no encontrado', 'error');
+        return;
+    }
+
+    try {
+        const win = window.open();
+        if (!win) {
+            toast('Por favor, permití las ventanas emergentes para ver el archivo', 'warning');
+            return;
+        }
+        
+        // Si es PDF, usamos iframe para mejor visualización
+        if (record.fileData.startsWith('data:application/pdf')) {
+            win.document.write(`
+                <title>${record.title || record.nombre || 'Documento'}</title>
+                <body style="margin:0; background:#333">
+                    <iframe src="${record.fileData}" frameborder="0" style="width:100%; height:100vh;" allowfullscreen></iframe>
+                </body>
+            `);
+        } else {
+            // Si es imagen, la centramos
+            win.document.write(`
+                <title>${record.title || record.nombre || 'Imagen'}</title>
+                <body style="margin:0; background:#000; display:flex; align-items:center; justify-content:center; min-height:100vh">
+                    <img src="${record.fileData}" style="max-width:100%; max-height:100vh; object-fit:contain">
+                </body>
+            `);
+        }
+    } catch (e) {
+        toast('No se pudo abrir el archivo', 'error');
+    }
+}
+
+
+function renderMedObservations() {
+    const list = document.getElementById('med-p-observaciones');
+    if (!state.portalObs || state.portalObs.length === 0) {
+        list.innerHTML = '';
+        return;
+    }
+    list.innerHTML = state.portalObs.slice().reverse().map(o => `
+        <div style="padding:12px; background:var(--bg2); border-radius:10px; margin-bottom:10px; font-size:13px">
+            <div style="font-weight:800; font-size:11px; color:var(--primary); margin-bottom:4px">${formatDate(o.fecha)} · ${o.medico}</div>
+            <div>${o.texto}</div>
+        </div>
+    `).join('');
+}
+
+function saveMedObservation() {
+    const name = document.getElementById('med-auth-name').value;
+    const id = document.getElementById('med-auth-id').value;
+    const note = document.getElementById('med-auth-note').value;
+    
+    if (!name || !id || !note) {
+        toast('Por favor, complete su identificación y la nota', 'warning');
+        return;
+    }
+
+    if (!state.portalObs) state.portalObs = [];
+    state.portalObs.push({
+        id: uid(),
+        fecha: new Date().toISOString(),
+        texto: note,
+        medico: name + ' (M.N. ' + id + ')'
+    });
+
+    saveState();
+    document.getElementById('med-auth-note').value = '';
+    renderMedObservations();
+    toast('Observación guardada con éxito', 'success');
+}
+
+function savePortalObs() {
+    const text = document.getElementById('portal-obs').value;
+    if (!text) return;
+    
+    if (!state.portalObs) state.portalObs = [];
+    
+    state.portalObs.push({
+        id: uid(),
+        fecha: new Date().toISOString(),
+        texto: text,
+        medico: state.currentDr.name + ' (' + state.currentDr.id + ')'
+    });
+    
+    saveState();
+    document.getElementById('portal-obs').value = '';
+    renderPortalObs();
+    toast('Observación guardada', 'success');
+}
+
+function renderPortalObs() {
+    const list = document.getElementById('portal-obs-list');
+    if (!list) return;
+    if (!state.portalObs || state.portalObs.length === 0) {
+        list.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:20px">No hay observaciones previas</div>';
+        return;
+    }
+    
+    list.innerHTML = state.portalObs.slice().reverse().map(o => `
+        <div class="card" style="margin-top:10px;padding:12px;background:var(--bg2)">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">${formatDate(o.fecha)} · ${o.medico}</div>
+            <div style="font-size:13px;line-height:1.5">${o.texto}</div>
+        </div>
+    `).join('');
+}
+
+function renderConfig() {
+  document.getElementById('config-name').value = state.user.name || '';
+  document.getElementById('config-age').value = state.user.age || '';
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const toggle = document.getElementById('dark-toggle');
+  if (toggle) {
+    toggle.checked = isDark;
+    updateToggleStyle(isDark);
+  }
+  const av = document.getElementById('config-avatar');
+  if (av) {
+    if (state.user.avatar) { av.innerHTML = `<img src="${state.user.avatar}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`; }
+    else { av.textContent = (state.user.name || 'U')[0].toUpperCase(); }
+  }
+}
+
+
+
+// ============================================================
+// GESTIÓN DE PERFIL Y PACIENTE
+// ============================================================
+function generatePatientId() {
+  const year = new Date().getFullYear();
+  const num = String(Math.floor(1000 + Math.random() * 9000));
+  state.patientId = 'CHK-' + year + '-' + num;
+  saveState();
+  return state.patientId;
+}
+
+function copyPatientId() {
+  navigator.clipboard.writeText(state.patientId).then(() => {
+    toast('ID de Paciente copiado: ' + state.patientId, 'success');
+  });
+}
+
+function renderPerfil() {
+  const p = state.profile || {};
+  document.getElementById('pf-nombre').value = p.nombre || '';
+  document.getElementById('pf-nacimiento').value = p.nacimiento || '';
+  document.getElementById('pf-genero').value = p.genero || '';
+  document.getElementById('pf-email').value = p.email || '';
+  document.getElementById('pf-telefono').value = p.telefono || '';
+  document.getElementById('pf-sangre').value = p.sangre || '';
+  document.getElementById('pf-obra').value = p.obra || '';
+  document.getElementById('pf-emergencia').value = p.emergencia || '';
+  document.getElementById('pf-antecedentes').value = p.antecedentes || '';
+  document.getElementById('pf-preexistentes').value = p.preexistentes || '';
+  document.getElementById('pf-alergias').value = p.alergias || '';
+  document.getElementById('pf-medicacion').value = p.medicacion || '';
+  
+  updateProfileHero();
+  generateQR();
+}
+
+function saveProfile() {
+  state.profile = {
+    nombre: document.getElementById('pf-nombre').value,
+    nacimiento: document.getElementById('pf-nacimiento').value,
+    genero: document.getElementById('pf-genero').value,
+    email: document.getElementById('pf-email').value,
+    telefono: document.getElementById('pf-telefono').value,
+    sangre: document.getElementById('pf-sangre').value,
+    obra: document.getElementById('pf-obra').value,
+    emergencia: document.getElementById('pf-emergencia').value,
+    antecedentes: document.getElementById('pf-antecedentes').value,
+    preexistentes: document.getElementById('pf-preexistentes').value,
+    alergias: document.getElementById('pf-alergias').value,
+    medicacion: document.getElementById('pf-medicacion').value,
+    photo: state.profile.photo || ''
+  };
+  saveState();
+  updateProfileHero();
+  toast('Perfil actualizado correctamente', 'success');
+}
+
+function updateProfileHero() {
+  const p = state.profile || {};
+  const name = document.getElementById('pf-nombre').value || p.nombre || state.user.name || 'Tu Nombre';
+  document.getElementById('profile-hero-name').textContent = name;
+  document.getElementById('profile-patient-id').textContent = state.patientId || 'Generando...';
+  
+  const nacimiento = document.getElementById('pf-nacimiento').value || p.nacimiento;
+  let ageStr = 'Sin edad';
+  if (nacimiento) {
+    const age = Math.floor((new Date() - new Date(nacimiento)) / 31557600000);
+    ageStr = age + ' años';
+  }
+  document.getElementById('profile-hero-sub').textContent = (document.getElementById('pf-genero').value || p.genero || 'Género') + ' · ' + ageStr;
+  document.getElementById('profile-hero-blood').textContent = '🩸 ' + (document.getElementById('pf-sangre').value || p.sangre || '-');
+  document.getElementById('profile-hero-obra').textContent = '🏥 ' + (document.getElementById('pf-obra').value || p.obra || '-');
+  
+  // Avatar
+  const av = document.getElementById('profile-avatar-display');
+  if (p.photo) {
+    av.innerHTML = `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  } else {
+    av.innerHTML = `<span id="profile-avatar-initials">${name[0].toUpperCase()}</span>`;
+  }
+}
+
+function changeProfilePhoto(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      state.profile.photo = e.target.result;
+      saveState();
+      updateProfileHero();
+      toast('Foto de perfil actualizada', 'success');
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function updateTheme() {
+    const isDark = state.darkMode;
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+}
+
+function saveConfig() {
+  const name = document.getElementById('config-name').value.trim();
+  if (!name) { toast('El nombre no puede estar vacío', 'error'); return; }
+
+  state.user.name = name;
+  state.user.age = document.getElementById('config-age').value;
+  saveState();
+  document.getElementById('sidebar-name').textContent = name;
+  const av = document.getElementById('sidebar-avatar');
+  if (!state.user.avatar) av.textContent = name[0].toUpperCase();
+  toast('Configuración guardada', 'success');
+}
+
+function changeAvatar(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      state.user.avatar = e.target.result;
+      saveState();
+      const av = document.getElementById('config-avatar');
+      av.innerHTML = `<img src="${e.target.result}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+      const sav = document.getElementById('sidebar-avatar');
+      sav.innerHTML = `<img src="${e.target.result}" alt="Avatar">`;
+      toast('Foto de perfil actualizada', 'success');
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function toggleDark(checkbox) {
+  const isDark = checkbox.checked;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  state.darkMode = isDark;
+  saveState();
+  updateToggleStyle(isDark);
+  if (dashChart) renderDashChart();
+  if (bienestarChart) renderBienestarChart();
+  toast(`Modo ${isDark ? 'oscuro' : 'claro'} activado`, 'info');
+}
+
+function updateToggleStyle(isDark) {
+  const track = document.getElementById('toggle-track');
+  const thumb = document.getElementById('toggle-thumb');
+  if (track && thumb) {
+    track.style.background = isDark ? 'var(--primary)' : 'var(--border)';
+    thumb.style.transform = isDark ? 'translateX(24px)' : 'translateX(0)';
+  }
+}
+
+function exportData() {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `chequeate_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Datos exportados exitosamente', 'success');
+}
+
+function exportPDF() {
+  if (!window.jspdf) { toast('PDF no disponible, intenta recargar la página', 'warning'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const today = new Date().toLocaleDateString('es-AR');
+  doc.setFillColor(37, 99, 235);
+  doc.rect(0, 0, 210, 40, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Chequeate - Reporte de Salud', 14, 20);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Paciente: ${state.user.name}   |   Fecha: ${today}`, 14, 32);
+  doc.setTextColor(30, 30, 30);
+  let y = 52;
+  doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+  doc.text('Especialidades Médicas', 14, y); y += 8;
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+  if (state.especialidades.length === 0) { doc.text('Sin especialidades registradas.', 14, y); y += 7; }
+  else { state.especialidades.forEach(e => { doc.text(`• ${e.nombre} — ${e.estado} (${e.frecuencia})${e.ultimo ? ' | Último: ' + formatDate(e.ultimo) : ''}`, 14, y); y += 7; if (y > 270) { doc.addPage(); y = 14; } }); }
+  y += 4;
+  doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+  doc.text('Próximos Turnos', 14, y); y += 8;
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+  const upcoming = state.turnos.filter(t => !t.completado && new Date(t.fecha) >= new Date()).slice(0, 10);
+  if (upcoming.length === 0) { doc.text('Sin turnos próximos.', 14, y); y += 7; }
+  else { upcoming.forEach(t => { doc.text(`• ${formatDate(t.fecha)} ${t.hora||''} — ${t.especialidad}${t.medico ? ' | ' + t.medico : ''}`, 14, y); y += 7; if (y > 270) { doc.addPage(); y = 14; } }); }
+  y += 4;
+  doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+  doc.text('Historial Médico', 14, y); y += 8;
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+  if (state.historial.length === 0) { doc.text('Sin estudios registrados.', 14, y); y += 7; }
+  else { state.historial.slice(0, 15).forEach(h => { doc.text(`• ${formatDate(h.fecha)} — ${h.nombre} (${h.tipo})${h.medico ? ' | ' + h.medico : ''}`, 14, y); y += 7; if (y > 270) { doc.addPage(); y = 14; } }); }
+  doc.save(`chequeate_reporte_${new Date().toISOString().split('T')[0]}.pdf`);
+  toast('Reporte PDF generado', 'success');
+}
+
+function requestNotifications() {
+  if (!('Notification' in window)) { toast('Tu navegador no soporta notificaciones', 'warning'); return; }
+  Notification.requestPermission().then(perm => {
+    if (perm === 'granted') {
+      toast('Recordatorios activados ✅', 'success');
+      checkUpcomingReminders();
+    } else { toast('Permiso de notificaciones denegado', 'warning'); }
+  });
+}
+
+function checkUpcomingReminders() {
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  const turnos = state.turnos.filter(t => t.fecha === tomorrowStr && !t.completado);
+  turnos.forEach(t => {
+    new Notification('🏥 Chequeate — Recordatorio', {
+      body: `Mañana tenés turno: ${t.especialidad}${t.hora ? ' a las ' + t.hora : ''}${t.medico ? ' con ' + t.medico : ''}.`,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🏥</text></svg>'
+    });
+  });
+}
+
+function confirmDeleteData() {
+  confirmAction('¿Borrar TODOS los datos? Esta acción no se puede deshacer.', () => {
+    localStorage.removeItem(APP_KEY);
+    location.reload();
+  });
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+async function initApp() {
+  loadState();
+  
+  // 0. Control de Onboarding
+  if (state.user.name && state.onboarded) {
+    const ob = document.getElementById('onboarding');
+    if (ob) ob.style.display = 'none';
+  }
+
+  // 1. Aplicar Tema
+  if (state.darkMode) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    const toggle = document.getElementById('dark-toggle');
+    if (toggle) { toggle.checked = true; updateToggleStyle(true); }
+  }
+
+  // 2. Detectar Acceso Remoto (Nube)
+  const hash = window.location.hash;
+  if (hash.startsWith('#remote-')) {
+    toast('El acceso remoto a perfiles de nube está desactivado.', 'warning');
+  }
+
+  // 3. Inicialización Normal
+  if (state.especialidades.length === 0) {
+    state.especialidades = ESP_DEFAULTS;
+    saveState();
+  }
+  if (!state.patientId) generatePatientId();
+
+  // 4. Navegación Inicial
+  if (hash === '#emergencia') {
+    enterMedicalView();
+  } else {
+    navigate('dashboard');
+  }
+
+  // 5. Tutorial
+  if (!state.tutorialDone && state.onboarded) {
+    setTimeout(() => openModal('modal-tutorial'), 1000);
+  }
+}
+
+
+// ============================================================
+// TUTORIAL
+// ============================================================
+let tutorialStep = 0;
+const TUTORIAL_DATA = [
+    { icon: '🆔', title: 'Tu ID Médico', text: 'En la sección Perfil tenés un QR único. Es tu identidad médica para que cualquier doctor acceda a tus datos críticos al instante.' },
+    { icon: '🩺', title: 'Test Preventivo', text: 'Realizá el test para obtener recomendaciones personalizadas basadas en tus hábitos y antecedentes familiares de cáncer.' },
+    { icon: '📊', title: 'Signos Vitales', text: 'Llevá un registro de tu presión, glucosa y peso. Calcularemos tu IMC y te mostraremos gráficos de evolución.' },
+    { icon: '🚨', title: 'Botón SOS', text: 'En emergencias, tocá el botón rojo flotante. Mostrará tus alergias y contacto de emergencia de forma inmediata.' }
+];
+
+function nextTutorialStep() {
+    if (tutorialStep < TUTORIAL_DATA.length) {
+        const data = TUTORIAL_DATA[tutorialStep];
+        document.getElementById('tut-icon').textContent = data.icon;
+        document.getElementById('tut-title').textContent = data.title;
+        document.getElementById('tut-text').textContent = data.text;
+        document.getElementById('tut-btn').textContent = tutorialStep === TUTORIAL_DATA.length - 1 ? '¡Entendido, empezar!' : 'Siguiente';
+        
+        // Actualizar puntos
+        const dots = document.querySelectorAll('.tut-dot');
+        dots.forEach((d, i) => d.classList.toggle('active', i === tutorialStep));
+        
+        tutorialStep++;
+    } else {
+        finishTutorial();
+    }
+}
+
+function finishTutorial() {
+    state.tutorialDone = true;
+    saveState();
+    closeModal('modal-tutorial');
+    toast('¡Ya estás listo para usar Chequeate!', 'success');
+}
+
+// Close modals with ESC
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.active').forEach(m => closeModal(m.id));
+  }
+});
+
+// Prevent dark toggle clicks from propagating
+document.getElementById('dark-toggle').addEventListener('click', function(e) { e.stopPropagation(); });
+
+
+// ============================================================
+// QR MEDICAL VIEW
+// ============================================================
+
+// ============================================================
+// QR MEDICAL VIEW
+// ============================================================
+function openQRView() {
+  const p = state.profile || {};
+  const id = state.patientId || generatePatientId();
+  let age = '';
+  if (p.nacimiento) { const diff = Date.now() - new Date(p.nacimiento).getTime(); age = Math.floor(diff/31557600000) + ' años'; }
+  const set = (elId, v) => { const el = document.getElementById(elId); if(el) el.textContent = v; };
+  set('qrv-name', p.nombre || state.user.name || 'Paciente');
+  set('qrv-age', age || 'Edad no registrada');
+  set('qrv-blood', '🩸 ' + (p.sangre || 'Desconocido'));
+  set('qrv-id', id);
+  set('qrv-obra', p.obra || 'Sin obra social');
+  set('qrv-emergencia', p.emergencia || 'No registrado');
+  set('qrv-alergias', p.alergias || 'Sin alergias conocidas');
+  set('qrv-medicacion', p.medicacion || '-');
+  const medBox = document.getElementById('qrv-medicacion-box');
+  if (medBox) medBox.style.display = p.medicacion ? 'block' : 'none';
+  const realized = state.especialidades.filter(e => e.estado === 'realizada').length;
+  const total = state.especialidades.length || 1;
+  const s = Math.min(100, Math.round((realized/total)*60) + (state.historial.length>0?20:0) + (state.bienestar.length>0?20:0));
+  set('qrv-score', s + '/100');
+  const espEl = document.getElementById('qrv-especialidades');
+  if (espEl) {
+    if (state.especialidades.length > 0) {
+      espEl.innerHTML = state.especialidades.map(e => '<div class="qr-specialty-row"><div style="font-size:24px">' + (e.icon||'🩺') + '</div><div style="flex:1"><div style="font-weight:700;font-size:14px">' + e.nombre + '</div><div style="font-size:12px;color:var(--text3)">' + e.frecuencia + ' · ' + (e.medico||'Médico no asignado') + (e.ultimo?' · Último: '+formatDate(e.ultimo):'') + '</div></div><span class="badge ' + (e.estado==='realizada'?'badge-green':e.estado==='urgente'?'badge-red':'badge-yellow') + '">' + e.estado + '</span></div>').join('');
+    } else { espEl.innerHTML = '<div class="empty-state" style="padding:20px"><i class="fas fa-stethoscope" style="font-size:30px"></i><p>Sin especialidades</p></div>'; }
+  }
+  renderQRHistory(state.historial);
+  const obsEl = document.getElementById('qrv-observaciones');
+  if (obsEl) {
+    if (state.portalObs.length > 0) {
+      obsEl.innerHTML = state.portalObs.slice().reverse().map(o => '<div class="qr-history-item"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">' + formatDate(o.fecha) + ' · ' + o.medico + '</div><div style="font-size:13px;line-height:1.6">' + o.texto + '</div></div>').join('');
+    } else { obsEl.innerHTML = '<div class="empty-state" style="padding:20px"><i class="fas fa-comment" style="font-size:30px"></i><p>Sin observaciones</p></div>'; }
+  }
+  const qmv = document.getElementById('qr-medical-view');
+  if (qmv) { qmv.classList.add('active'); document.body.style.overflow = 'hidden'; }
+}
+
+function closeQRView() {
+  const qmv = document.getElementById('qr-medical-view');
+  if (qmv) qmv.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function renderQRHistory(list) {
+  const el = document.getElementById('qrv-historial');
+  if (!el) return;
+  const sorted = [...list].sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+  if (sorted.length === 0) { el.innerHTML = '<div class="empty-state" style="padding:20px"><i class="fas fa-folder-open" style="font-size:30px"></i><p>Sin estudios</p></div>'; return; }
+  const colors = { laboratorio:'var(--purple)', imagen:'var(--primary)', consulta:'var(--green)', otro:'var(--yellow)' };
+  el.innerHTML = sorted.map(h => '<div class="qr-history-item" style="border-left-color:' + (colors[h.tipo]||'var(--primary)') + '"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div><div style="font-weight:700;font-size:14px;margin-bottom:4px">' + h.nombre + '</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px"><span class="badge badge-blue">' + (h.especialidad||'General') + '</span></div>' + (h.medico?'<div style="font-size:12px;color:var(--text3)"><i class="fas fa-user-md" style="margin-right:4px"></i>' + h.medico + '</div>':'') + (h.obs?'<div style="font-size:12px;color:var(--text2);margin-top:6px;padding:8px;background:var(--bg2);border-radius:6px;line-height:1.5">' + h.obs + '</div>':'') + '</div><div style="font-size:11px;color:var(--text3);white-space:nowrap">' + formatDate(h.fecha) + '</div></div>' + (h.fileData?'<div style="margin-top:8px"><a href="' + h.fileData + '" download="' + (h.fileName||'archivo') + '" class="btn btn-ghost btn-sm"><i class="fas fa-download"></i>' + (h.fileName||'Descargar') + '</a></div>':'') + '</div>').join('');
+}
+
+function filterQRHistory(val) {
+  const filtered = val ? state.historial.filter(h => (h.nombre+h.especialidad+h.medico+h.obs).toLowerCase().includes(val.toLowerCase())) : state.historial;
+  renderQRHistory(filtered);
+}
+
+// ============================================================
+// TEST PREVENTIVO
+// ============================================================
+const TEST_QUESTIONS = [
+  { id:'actividad', text:'¿Con qué frecuencia realizás actividad física?', options:['Nunca o casi nunca','1-2 veces por semana','3-4 veces por semana','Todos los días'] },
+  { id:'alimentacion', text:'¿Cómo describirías tu alimentación habitual?', options:['Muy poco saludable','Regular (mejorable)','Bastante saludable','Muy saludable y variada'] },
+  { id:'sueno', text:'¿Cuántas horas dormís en promedio?', options:['Menos de 5 horas','5-6 horas','7-8 horas','Más de 9 horas'] },
+  { id:'estres', text:'¿Cuál es tu nivel de estrés habitual?', options:['Muy alto','Alto','Moderado','Bajo o manejable'] },
+  { id:'tabaco', text:'¿Fumás o usaste tabaco?', options:['Sí, actualmente','Exfumador/a','Nunca fumé','Ocasionalmente'] },
+  { id:'chequeos', text:'¿Cuándo fue tu último chequeo médico general?', options:['Nunca fui','Hace más de 3 años','Hace 1-3 años','En el último año'] },
+  { id:'antecedentes_colon', text:'¿Algún familiar directo (padre/madre/hermano) tuvo cáncer de colon?', options:['Sí, antes de los 50 años','Sí, después de los 50 años','No sé','No'] },
+  { id:'antecedentes_mama', text:'¿Hay antecedentes de cáncer de mama o útero en tu familia directa?', options:['Sí, varios casos','Sí, un caso','No sé','No'] },
+  { id:'antecedentes_piel', text:'¿Tenés antecedentes familiares de melanoma o cáncer de piel?', options:['Sí','No sé','No'] }
+];
+
+let testAnswers = {};
+let currentTestQ = 0;
+
+function renderTest() {
+  const s0 = document.getElementById('test-step-0');
+  const tq = document.getElementById('test-questions');
+  const tr = document.getElementById('test-results');
+  if (!s0 || !tq || !tr) return;
+  if (state.testResults) {
+    s0.style.display='none'; tq.style.display='none';
+    renderTestResults(); tr.style.display='block';
+  } else {
+    s0.style.display='block'; tq.style.display='none'; tr.style.display='none';
+  }
+}
+
+function startTest() {
+  testAnswers = {}; currentTestQ = 0;
+  document.getElementById('test-step-0').style.display='none';
+  const tq = document.getElementById('test-questions');
+  tq.style.display='block';
+  tq.innerHTML = '<div class="test-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><div style="font-size:13px;color:var(--text3)" id="test-pg-text">Pregunta 1 de ' + TEST_QUESTIONS.length + '</div></div><div class="progress-bar" style="margin-bottom:24px"><div class="progress-fill" id="test-pg-bar" style="background:var(--primary);width:' + Math.round(1/TEST_QUESTIONS.length*100) + '%"></div></div>' + TEST_QUESTIONS.map((q,i) => '<div class="test-question" id="tq-' + i + '" style="' + (i>0?'display:none':'') + '"><div class="test-question-title">' + q.text + '</div>' + q.options.map((o,j) => '<div class="test-option" onclick="selectTestOpt(' + i + ',' + j + ',this)">' + o + '</div>').join('') + '</div>').join('') + '<div style="display:flex;gap:10px;margin-top:24px"><button class="btn btn-ghost" id="t-prev" onclick="testPrev()" style="display:none"><i class="fas fa-arrow-left"></i>Anterior</button><button class="btn btn-primary" id="t-next" onclick="testNext()" style="margin-left:auto" disabled><i class="fas fa-arrow-right"></i>Siguiente</button></div></div>';
+}
+
+function selectTestOpt(qi, oi, el) {
+  testAnswers[TEST_QUESTIONS[qi].id] = oi;
+  document.querySelectorAll('#tq-' + qi + ' .test-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  const nb = document.getElementById('t-next'); if(nb) nb.disabled = false;
+}
+
+function testNext() {
+  if (testAnswers[TEST_QUESTIONS[currentTestQ].id] === undefined) { toast('Seleccioná una opción', 'warning'); return; }
+  if (currentTestQ < TEST_QUESTIONS.length - 1) {
+    document.getElementById('tq-' + currentTestQ).style.display='none';
+    currentTestQ++;
+    document.getElementById('tq-' + currentTestQ).style.display='block';
+    const pgt = document.getElementById('test-pg-text'); if(pgt) pgt.textContent = 'Pregunta ' + (currentTestQ+1) + ' de ' + TEST_QUESTIONS.length;
+    const pgb = document.getElementById('test-pg-bar'); if(pgb) pgb.style.width = Math.round((currentTestQ+1)/TEST_QUESTIONS.length*100) + '%';
+    const prev = document.getElementById('t-prev'); if(prev) prev.style.display = currentTestQ > 0 ? 'inline-flex' : 'none';
+    const next = document.getElementById('t-next');
+    if(next) { next.innerHTML = currentTestQ === TEST_QUESTIONS.length-1 ? '<i class="fas fa-chart-bar"></i>Ver Resultados' : '<i class="fas fa-arrow-right"></i>Siguiente'; next.disabled = testAnswers[TEST_QUESTIONS[currentTestQ].id]!==undefined ? false : true; }
+  } else { finishTest(); }
+}
+
+function testPrev() {
+  if (currentTestQ > 0) {
+    document.getElementById('tq-' + currentTestQ).style.display='none';
+    currentTestQ--;
+    document.getElementById('tq-' + currentTestQ).style.display='block';
+    const pgt = document.getElementById('test-pg-text'); if(pgt) pgt.textContent = 'Pregunta ' + (currentTestQ+1) + ' de ' + TEST_QUESTIONS.length;
+    const prev = document.getElementById('t-prev'); if(prev) prev.style.display = currentTestQ > 0 ? 'inline-flex' : 'none';
+    const next = document.getElementById('t-next'); if(next) { next.innerHTML = '<i class="fas fa-arrow-right"></i>Siguiente'; next.disabled = false; }
+  }
+}
+
+function finishTest() {
+  const scores = { 
+    actividad:[0,1,2,3], 
+    alimentacion:[0,1,2,3], 
+    sueno:[0,1,3,2], 
+    estres:[0,1,2,3], 
+    tabaco:[0,1,3,2], 
+    chequeos:[0,1,2,3],
+    antecedentes_colon:[0,1,2,3],
+    antecedentes_mama:[0,1,2,3],
+    antecedentes_piel:[0,1,2,3]
+  };
+  let total = 0;
+  TEST_QUESTIONS.forEach(q => { const a = testAnswers[q.id]; if(a!==undefined && scores[q.id]) total += scores[q.id][a]||0; });
+  const maxPossible = (TEST_QUESTIONS.length * 3);
+  const pct = Math.round((total/maxPossible)*100);
+  state.testResults = { answers: testAnswers, score: pct, date: new Date().toISOString().split('T')[0] };
+  saveState();
+  document.getElementById('test-questions').style.display='none';
+  renderTestResults();
+  document.getElementById('test-results').style.display='block';
+}
+
+function renderTestResults() {
+  if (!state.testResults) return;
+  const s = state.testResults.score;
+  const recs = generateRecs(state.testResults.answers);
+  
+  let html = `
+    <div class="test-card" style="text-align:center;margin-bottom:24px">
+      <div style="font-size:52px;margin-bottom:16px">${s >= 70 ? '🌟' : s >= 40 ? '📈' : '💪'}</div>
+      <div style="font-size:22px;font-weight:800;margin-bottom:8px">Score Preventivo: ${s}/100</div>
+      <div class="progress-bar" style="max-width:300px;margin:0 auto 16px;height:14px">
+        <div class="progress-fill" style="background:${s >= 70 ? 'var(--green)' : s >= 40 ? 'var(--yellow)' : 'var(--red)'};width:${s}%"></div>
+      </div>
+      <div style="font-size:14px;color:var(--text3);margin-bottom:20px;line-height:1.6">
+        ${s >= 70 ? '¡Excelentes hábitos! Seguí así.' : s >= 40 ? 'Buen camino, pero hay margen para mejorar.' : 'Es un buen momento para empezar cambios preventivos.'}
+      </div>
+      <button class="btn btn-ghost" onclick="restartTest()"><i class="fas fa-redo"></i> Repetir Test</button>
+    </div>
+    
+    <div style="font-weight:800;font-size:18px;margin-bottom:16px">
+      <i class="fas fa-robot color-purple" style="margin-right:8px"></i>Recomendaciones Médicas
+    </div>
+  `;
+
+  html += recs.map(r => `
+    <div class="rec-card">
+      <div class="rec-card-icon">${r.icon}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px;margin-bottom:4px">${r.title}</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:10px">${r.text}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span class="badge badge-purple">${r.specialty}</span>
+          <button class="btn btn-primary btn-sm" onclick="quickAddEsp('${r.specialty.split(' / ')[0]}')">
+            <i class="fas fa-plus"></i> Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('test-results').innerHTML = html;
+}
+
+function quickAddEsp(nombre) {
+  const normalName = nombre.trim();
+  if (state.especialidades.some(e => e.nombre.toLowerCase() === normalName.toLowerCase())) {
+    toast('Ya tenés ' + normalName + ' en tu lista', 'info');
+    return;
+  }
+  const data = {
+    id: uid(),
+    nombre: normalName,
+    desc: 'Control recomendado según análisis de antecedentes',
+    frecuencia: 'Anual',
+    estado: 'pendiente',
+    ultimo: '',
+    medico: '',
+    icon: getEspIcon(normalName),
+    color: getEspColor(normalName)
+  };
+  state.especialidades.push(data);
+  saveState();
+  renderEspecialidades();
+  toast(normalName + ' agregada con éxito', 'success');
+}
+
+// ============================================================
+// VACUNACIÓN
+// ============================================================
+function renderVacunas() {
+    const list = document.getElementById('vacunas-list');
+    if (!list) return;
+    if (state.vacunas.length === 0) { list.innerHTML = '<div class="empty-state" style="grid-column: span 2"><i class="fas fa-syringe"></i><p>Sin vacunas registradas.</p></div>'; return; }
+    list.innerHTML = state.vacunas.map(v => `
+        <div class="card" style="border-left: 4px solid var(--primary)">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start">
+                <div>
+                    <div style="font-weight:700;font-size:15px;margin-bottom:4px">${v.nombre}</div>
+                    <div style="font-size:13px;color:var(--text2)">${v.dosis}</div>
+                    <div style="font-size:12px;color:var(--text3);margin-top:6px"><i class="fas fa-calendar-alt"></i> ${formatDate(v.fecha)}</div>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="deleteVacuna('${v.id}')"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function saveVacuna() {
+    const nombre = document.getElementById('v-vac-nombre').value;
+    const dosis = document.getElementById('v-vac-dosis').value;
+    const fecha = document.getElementById('v-vac-fecha').value;
+    if (!nombre || !fecha) { toast('Completá nombre y fecha', 'warning'); return; }
+    state.vacunas.push({ id: uid(), nombre, dosis, fecha });
+    saveState();
+    closeModal('modal-vacuna');
+    renderVacunas();
+    toast('Vacuna registrada', 'success');
+}
+
+function deleteVacuna(id) {
+    confirmAction('¿Eliminar esta vacuna?', () => {
+        state.vacunas = state.vacunas.filter(v => v.id !== id);
+        saveState(); renderVacunas(); toast('Vacuna eliminada', 'info');
+    });
+}
+
+// ============================================================
+// LABORATORIO
+// ============================================================
+function renderLaboratorio() {
+    const list = document.getElementById('lab-list');
+    if (!list) return;
+    if (state.laboratorio.length === 0) { list.innerHTML = '<div class="empty-state" style="grid-column: span 2"><i class="fas fa-file-medical"></i><p>Todavía no subiste ningún informe.</p></div>'; return; }
+    
+    list.innerHTML = state.laboratorio.map(l => `
+        <div class="card" style="border-left: 5px solid var(--primary)">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px">
+                <div>
+                    <div style="font-size:12px; color:var(--text3); font-weight:700">${formatDate(l.fecha)}</div>
+                    <div style="font-weight:800; font-size:16px; margin-top:4px">${l.estudio}</div>
+                </div>
+                <div style="display:flex; gap:8px">
+                    <button class="btn btn-ghost btn-sm" onclick="deleteLab('${l.id}')"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-top:10px">
+                <a href="${l.fileData}" download="${l.fileName || 'informe'}" class="btn btn-primary btn-sm" style="flex:1; justify-content:center">
+                    <i class="fas fa-paperclip"></i> Descargar Informe
+                </a>
+                <button class="btn btn-outline btn-sm" onclick="viewLabFile('${l.id}')">
+                    <i class="fas fa-eye"></i> Ver
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function viewLabFile(id) {
+    const lab = state.laboratorio.find(l => l.id === id);
+    if (lab && lab.fileData) {
+        const win = window.open();
+        win.document.write('<iframe src="' + lab.fileData + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+    }
+}
+
+async function saveLab() {
+    const estudioInput = document.getElementById('l-estudio');
+    const fechaInput = document.getElementById('l-fecha');
+    
+    const estudio = estudioInput.value || "Informe de Laboratorio";
+    const fecha = fechaInput.value;
+    
+    if (!window.lastScannedFile) { toast('Por favor, seleccioná un archivo primero', 'warning'); return; }
+    if (!fecha) { toast('Por favor, ingresá la fecha del estudio', 'warning'); return; }
+
+    try {
+        const reader = new FileReader();
+        const fileData = await new Promise((resolve, reject) => {
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e);
+            reader.readAsDataURL(window.lastScannedFile);
+        });
+
+        const entry = { 
+            id: uid(), 
+            estudio, 
+            fecha, 
+            fileData, 
+            fileName: window.lastScannedFile.name 
+        };
+
+        state.laboratorio.push(entry);
+        saveState(); 
+        
+        // Reset
+        window.lastScannedFile = null;
+        estudioInput.value = '';
+        fechaInput.value = '';
+        
+        closeModal('modal-lab'); 
+        renderLaboratorio(); 
+        toast('Informe guardado correctamente', 'success');
+    } catch (e) {
+        console.error(e);
+        toast('Error al guardar el archivo. Puede ser demasiado grande.', 'error');
+    }
+}
+
+function deleteLab(id) {
+    confirmAction('¿Eliminar este resultado?', () => {
+        state.laboratorio = state.laboratorio.filter(l => l.id !== id);
+        saveState(); renderLaboratorio(); toast('Registro eliminado', 'info');
+    });
+}
+
+// ============================================================
+// MEDICACIÓN
+// ============================================================
+function renderMedicacion() {
+    const list = document.getElementById('med-list');
+    if (!list) return;
+    if (state.medicacion.length === 0) { list.innerHTML = '<div class="empty-state" style="grid-column: span 3"><i class="fas fa-pills"></i><p>Sin medicación registrada.</p></div>'; return; }
+    list.innerHTML = state.medicacion.map(m => `
+        <div class="card" style="border-top: 4px solid var(--purple)">
+            <div style="font-weight:800;font-size:16px;margin-bottom:8px;color:var(--purple)">${m.nombre}</div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px"><i class="fas fa-clock" style="margin-right:6px"></i>${m.dosis}</div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:12px">${m.uso || 'Uso no especificado'}</div>
+            <button class="btn btn-outline btn-sm" style="width:100%" onclick="deleteMed('${m.id}')"><i class="fas fa-trash"></i> Quitar</button>
+        </div>
+    `).join('');
+}
+
+function saveMed() {
+    const nombre = document.getElementById('m-nombre').value;
+    const dosis = document.getElementById('m-dosis').value;
+    if (!nombre || !dosis) { toast('Completá nombre y dosis', 'warning'); return; }
+    state.medicacion.push({ id: uid(), nombre, dosis, uso: document.getElementById('m-uso').value });
+    saveState(); closeModal('modal-med'); renderMedicacion(); toast('Medicación agregada', 'success');
+}
+
+function deleteMed(id) {
+    confirmAction('¿Eliminar esta medicación?', () => {
+        state.medicacion = state.medicacion.filter(m => m.id !== id);
+        saveState(); renderMedicacion(); toast('Medicación eliminada', 'info');
+    });
+}
+
+function openSOS() {
+    const p = state.profile || {};
+    document.getElementById('sos-name').textContent = p.nombre || state.user.name || 'Paciente';
+    document.getElementById('sos-blood').textContent = p.sangre || '--';
+    document.getElementById('sos-allergies').textContent = p.alergias || 'Ninguna registrada';
+    document.getElementById('sos-contact').textContent = p.emergencia || 'No registrado';
+    document.getElementById('sos-meds').textContent = p.medicacion || 'No registrada';
+    document.getElementById('sos-pre').textContent = p.preexistentes || 'Ninguna';
+    
+    // Extraer número de teléfono del contacto si existe
+    const phoneMatch = (p.emergencia || '').match(/\+?\d[\d\s-]{7,}/);
+    const callBtn = document.getElementById('sos-call');
+    if (phoneMatch) {
+        callBtn.href = 'tel:' + phoneMatch[0].replace(/\s/g, '');
+        callBtn.style.display = 'flex';
+    } else {
+        callBtn.style.display = 'none';
+    }
+
+    document.getElementById('sos-view').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSOS() {
+    document.getElementById('sos-view').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function restartTest() {
+  state.testResults = null; saveState(); testAnswers = {};
+  document.getElementById('test-results').style.display='none';
+  document.getElementById('test-questions').style.display='none';
+  document.getElementById('test-step-0').style.display='block';
+}
+
+function generateRecs(answers) {
+  const recs = [];
+  const age = parseInt(state.user.age) || 0;
+
+  // HÁBITOS
+  if (answers.actividad < 2)
+    recs.push({ icon:'🏃', title:'Incorporá actividad física', text:'Al menos 150 min/semana de actividad moderada reducen significativamente el riesgo de cáncer de colon y mama.', specialty:'Clínica Médica' });
+  if (answers.tabaco === 0)
+    recs.push({ icon:'🚭', title:'Cesación tabáquica urgente', text:'El tabaco está vinculado a 15 tipos de cáncer. Consultá por programas de apoyo para dejarlo.', specialty:'Neumonología' });
+  if (answers.chequeos < 2)
+    recs.push({ icon:'🩺', title:'Chequeo general pendiente', text:'Es vital realizar un control anual para detectar factores de riesgo silenciosos.', specialty:'Clínica Médica' });
+
+  // ANÁLISIS DE ANTECEDENTES (Cáncer)
+  if (answers.antecedentes_colon <= 1) {
+    recs.push({ icon:'🧬', title:'Vigilancia de Colon', text:'Con antecedentes familiares, la colonoscopía se recomienda a partir de los 40 años o 10 años antes de la edad de diagnóstico del familiar.', specialty:'Gastroenterología' });
+  } else if (age >= 45) {
+    recs.push({ icon:'🔬', title:'Cribado de Colon por edad', text:'A partir de los 45-50 años se recomienda realizar un test de sangre oculta en materia fecal o colonoscopía de rutina.', specialty:'Gastroenterología' });
+  }
+
+  if (answers.antecedentes_mama <= 1) {
+    recs.push({ icon:'🌸', title:'Prevención Mamaria Reforzada', text:'Tener antecedentes directos requiere controles mamográficos más frecuentes y quizás asesoramiento genético.', specialty:'Ginecología / Mastología' });
+  } else if (age >= 40 && state.profile.genero === 'Femenino') {
+    recs.push({ icon:'🌸', title:'Mamografía Anual', text:'Al haber cumplido 40 años, se recomienda iniciar el cribado mamográfico anual de rutina.', specialty:'Ginecología' });
+  }
+
+  if (answers.antecedentes_piel === 0) {
+    recs.push({ icon:'☀️', title:'Control de Lunares (Dermatoscopía)', text:'Los antecedentes de cáncer de piel aumentan el riesgo. Realizá un mapeo de lunares anual con un especialista.', specialty:'Dermatología' });
+  }
+
+  if (age >= 50 && state.profile.genero === 'Masculino') {
+    recs.push({ icon:'🩺', title:'Salud Prostática', text:'Por rango de edad, es recomendable realizar el test de antígeno prostático (PSA) y consulta urológica.', specialty:'Urología' });
+  }
+
+  if (recs.length === 0)
+    recs.push({ icon:'✅', title:'¡Seguí así!', text:'Tus hábitos y antecedentes indican un perfil de bajo riesgo. Mantené tus controles anuales de rutina.', specialty:'Clínica Médica' });
+  
+  return recs;
+}
+
+// ============================================================
+// SIGNOS VITALES
+// ============================================================
+let chartPeso = null;
+let chartMix = null;
+
+function renderVitales() {
+  const last = state.vitales[state.vitales.length - 1] || {};
+  document.getElementById('vit-peso').textContent = last.peso ? last.peso + ' kg' : '--';
+  document.getElementById('vit-presion').textContent = (last.sist && last.diast) ? `${last.sist}/${last.diast}` : '--';
+  document.getElementById('vit-glucosa').textContent = last.glucosa ? last.glucosa + ' mg/dL' : '--';
+
+  if (last.peso && last.altura) {
+    const imc = (last.peso / ((last.altura / 100) ** 2)).toFixed(1);
+    document.getElementById('vit-imc').textContent = imc;
+    const cat = document.getElementById('vit-imc-cat');
+    if (imc < 18.5) { cat.textContent = 'Bajo peso'; cat.style.color = 'var(--yellow)'; }
+    else if (imc < 25) { cat.textContent = 'Normal'; cat.style.color = 'var(--green)'; }
+    else if (imc < 30) { cat.textContent = 'Sobrepeso'; cat.style.color = 'var(--yellow)'; }
+    else { cat.textContent = 'Obesidad'; cat.style.color = 'var(--red)'; }
+  }
+
+  renderVitalesCharts();
+}
+
+function saveVitales() {
+  const peso = parseFloat(document.getElementById('v-peso').value);
+  const altura = parseInt(document.getElementById('v-altura').value);
+  const sist = parseInt(document.getElementById('v-sist').value);
+  const diast = parseInt(document.getElementById('v-diast').value);
+  const glucosa = parseInt(document.getElementById('v-glucosa').value);
+  const fecha = document.getElementById('v-fecha').value || new Date().toISOString().split('T')[0];
+
+  if (!peso && !sist && !glucosa) { toast('Ingresá al menos un valor', 'warning'); return; }
+
+  state.vitales.push({ id: uid(), peso, altura, sist, diast, glucosa, fecha });
+  saveState();
+  closeModal('modal-vitales');
+  resetVitalesForm();
+  renderVitales();
+  toast('Signos vitales registrados', 'success');
+}
+
+function resetVitalesForm() {
+  ['v-peso','v-altura','v-sist','v-diast','v-glucosa','v-fecha'].forEach(id => document.getElementById(id).value = '');
+}
+
+function renderVitalesCharts() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const last10 = state.vitales.slice(-10);
+  const labels = last10.map(v => formatDate(v.fecha).slice(0, 5));
+
+  // CHART PESO
+  const ctxP = document.getElementById('chart-peso');
+  if (ctxP) {
+    if (chartPeso) chartPeso.destroy();
+    chartPeso = new Chart(ctxP, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{ label: 'Peso (kg)', data: last10.map(v => v.peso), borderColor: 'var(--primary)', tension: 0.3, fill: true, backgroundColor: 'rgba(37,99,235,0.1)' }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+  }
+
+  // CHART MIX (Presión y Glucosa)
+  const ctxM = document.getElementById('chart-vitals-mix');
+  if (ctxM) {
+    if (chartMix) chartMix.destroy();
+    chartMix = new Chart(ctxM, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Sistólica', data: last10.map(v => v.sist), borderColor: 'var(--red)', tension: 0.2 },
+          { label: 'Diastólica', data: last10.map(v => v.diast), borderColor: 'var(--yellow)', tension: 0.2 },
+          { label: 'Glucosa', data: last10.map(v => v.glucosa), borderColor: 'var(--purple)', tension: 0.2, borderDash: [5, 5] }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+}
+
+// ============================================================
+// INIT EXTENDED
+// BLUETOOTH SYNC
+// ============================================================
+let bluetoothDevice = null;
+let hrCharacteristic = null;
+
+async function connectBluetoothHR() {
+    if (!navigator.bluetooth) {
+        toast('Tu navegador no soporta Bluetooth Web', 'error');
+        return;
+    }
+
+    try {
+        toast('Buscando dispositivos...', 'info');
+        bluetoothDevice = await navigator.bluetooth.requestDevice({
+            filters: [{ services: ['heart_rate'] }]
+        });
+
+        const server = await bluetoothDevice.gatt.connect();
+        const service = await server.getPrimaryService('heart_rate');
+        hrCharacteristic = await service.getCharacteristic('heart_rate_measurement');
+        
+        await hrCharacteristic.startNotifications();
+        hrCharacteristic.addEventListener('characteristicvaluechanged', handleHRUpdate);
+
+        document.getElementById('bt-status-card').style.display = 'block';
+        document.getElementById('bt-device-name').textContent = bluetoothDevice.name || 'Sensor de Pulso';
+        document.getElementById('btn-bt-sync').innerHTML = '<i class="fas fa-unlink"></i>Desconectar';
+        document.getElementById('btn-bt-sync').onclick = disconnectBluetooth;
+        
+        toast('Sensor vinculado correctamente', 'success');
+        speak("Sensor conectado. Recibiendo datos de pulso en tiempo real.");
+    } catch (e) {
+        console.error(e);
+        toast('Error al conectar: ' + e.message, 'error');
+    }
+}
+
+function handleHRUpdate(event) {
+    const value = event.target.value;
+    const flags = value.getUint8(0);
+    let hrVal;
+    if (flags & 0x1) { hrVal = value.getUint16(1, true); }
+    else { hrVal = value.getUint8(1); }
+    
+    document.getElementById('bt-pulse-val').textContent = hrVal;
+    
+    // Si el modal de vitales está abierto, autocompletamos algo? 
+    // Por ahora solo mostramos en el dashboard de vitales
+}
+
+function disconnectBluetooth() {
+    if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+        bluetoothDevice.gatt.disconnect();
+    }
+    document.getElementById('bt-status-card').style.display = 'none';
+    document.getElementById('btn-bt-sync').innerHTML = '<i class="fas fa-bluetooth-b"></i>Sincronizar Sensor';
+    document.getElementById('btn-bt-sync').onclick = connectBluetoothHR;
+    toast('Sensor desconectado', 'info');
+}
+
+// ============================================================
+// BACKUP & SHARING
+// ============================================================
+function exportData() {
+    const dataStr = localStorage.getItem(APP_KEY);
+    if (!dataStr) { toast('No hay datos para exportar', 'warning'); return; }
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `chequeate_backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast('Copia de seguridad descargada', 'success');
+}
+
+function importData(input) {
+    if (!input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (data.user || data.profile) {
+                localStorage.setItem(APP_KEY, e.target.result);
+                toast('Datos importados con éxito. Reiniciando...', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                toast('El archivo no parece ser un backup válido', 'error');
+            }
+        } catch (err) {
+            toast('Error al leer el archivo', 'error');
+        }
+    };
+    reader.readAsText(input.files[0]);
+}
+
+function shareByWhatsApp() {
+    const p = state.profile || {};
+    const id = state.patientId || 'CHK-XXXX';
+    const msg = `🏥 *PERFIL MÉDICO - CHEQUEATE*
+📌 *ID:* ${id}
+👤 *Nombre:* ${p.nombre || state.user.name}
+🩸 *Grupo Sanguíneo:* ${p.sangre || 'No especificado'}
+⚠️ *Alergias:* ${p.alergias || 'Ninguna'}
+💊 *Medicación Actual:* ${p.medicacion || 'Ninguna'}
+🏠 *Obra Social:* ${p.obra || 'No especificada'}
+🚑 *Emergencia:* ${p.emergencia || 'No especificado'}
+
+_Enviado desde mi app Chequeate_`;
+
+    const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+    toast('Abriendo WhatsApp...', 'info');
+}
+
+// ARRANQUE DE LA APLICACIÓN
+function startApp() {
+    console.log('Iniciando vinculación de eventos...');
+    const btnNext = document.getElementById('ob-next');
+    if (btnNext) btnNext.onclick = obNext;
+    
+    const btnBack = document.getElementById('ob-back');
+    if (btnBack) btnBack.onclick = obBack;
+    
+    initApp();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startApp);
+} else {
+    startApp();
+}
+
+
+</script>
+</body>
+</html>
